@@ -5,10 +5,6 @@
 #include <map>
 #include <vector>
 
-// TODO: Remove
-#include "debug.hpp"
-#include <iostream>
-
 class CharacterFrequencyScoreCalculator
 {
 public:
@@ -16,9 +12,6 @@ public:
   {
     float alphabeticCharacterCount = (float)
       getAlphabeticCharacterCount(bytes);
-
-    std::cout << "Alphabetic byte count: " << alphabeticCharacterCount
-      << std::endl;
 
     auto frequencyMap = createEmptyFrequencyMap();
     for (auto nextCharacter : bytes)
@@ -31,39 +24,34 @@ public:
       }
     }
 
-    printMap<char, float>(frequencyMap);
-
     auto naturalFrequencyMap = createNaturalFrequencyMap();
 
-    static std::map<char, float> testMap;
+    auto frequencyVector = createFrequencyVector(frequencyMap);
+    auto naturalFrequencyVector = createFrequencyVector(naturalFrequencyMap);
 
-    float score = 0.0;
-    for (auto it1 = frequencyMap.begin(), it2 = naturalFrequencyMap.begin();
-      it1 != frequencyMap.end(); ++it1, ++it2)
-    {
-      std::cout << "Next delta [" << it1->first << "]: " <<
-        std::abs(it1->second - it2->second) << std::endl;
+    auto normalizedFrequencyVector = getNormalizedVector(frequencyVector);
+    auto normalizedNaturalFrequencyVector =
+      getNormalizedVector(naturalFrequencyVector);
 
-      if (frequencyMap.find(it1->first) == frequencyMap.end())
-      {
-        frequencyMap[it1->first] = std::abs(it1->second - it2->second);
-      }
-      else
-      {
-        std::cout << "Static delta: " <<
-          frequencyMap[it1->first] - std::abs(it1->second - it2->second)
-          << std::endl;
-      }
+    auto differenceVector = getVectorDifference(normalizedFrequencyVector,
+      normalizedNaturalFrequencyVector);
 
-      score += std::abs(it1->second - it2->second);
-    }
-
-    std::cout << "Pre-score: " << score << std::endl;
-
-    return 1 / score;
+    return 1 / getVectorLength(differenceVector);
   }
 
 private:
+  static std::vector<float> createFrequencyVector(
+    const std::map<char, float>& frequencyMap)
+  {
+    std::vector<float> frequencyVector;
+    for (auto pair : frequencyMap)
+    {
+      frequencyVector.push_back(pair.second);
+    }
+
+    return frequencyVector;
+  }
+
   static std::map<char, float> createNaturalFrequencyMap()
   {
     std::map<char, float> naturalFrequencyMap;
@@ -171,6 +159,42 @@ private:
     }
 
     return asciiByte;
+  }
+
+  static std::vector<float> getNormalizedVector(const std::vector<float>& vec)
+  {
+    float vectorLength = getVectorLength(vec);
+
+    std::vector<float> normalizedVector;
+    for (auto value : vec)
+    {
+      normalizedVector.push_back(value / vectorLength);
+    }
+
+    return normalizedVector;
+  }
+
+  static std::vector<float> getVectorDifference(const std::vector<float>& v1,
+    const std::vector<float>& v2)
+  {
+    std::vector<float> differenceVector;
+    for (auto it1 = v1.begin(), it2 = v2.begin(); it1 != v1.end(); ++it1, ++it2)
+    {
+      differenceVector.push_back(*it1 - *it2);
+    }
+
+    return differenceVector;
+  }
+
+  static float getVectorLength(const std::vector<float>& vec)
+  {
+    float sum = 0.0;
+    for (auto value : vec)
+    {
+      sum += value * value;
+    }
+
+    return std::sqrt(sum);
   }
 };
 

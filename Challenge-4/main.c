@@ -1,4 +1,3 @@
-#include <cstdlib> // TODO: Remove
 #include <ctime>
 
 #include <fstream>
@@ -75,75 +74,88 @@ void runTest()
 
 int main(int argc, char* argv[])
 {
+  runTest();
+
+  return 0;
+
   // generateTestFile();
 
-  // ByteSequence bestByteSequence, decryptedByteSequence;
-  // float maxScore = 0.0;
-  //
-  // // std::ifstream fileStream("file.txt");
-  // std::ifstream fileStream("file3.txt");
-  //
-  // std::string nextLine;
-  // while (std::getline(fileStream, nextLine))
-  // {
-  //   ByteSequence byteSequence1;
-  //   byteSequence1.initializeFromHexEncodedAsciiBytes(
-  //     std::vector<char>(&nextLine[0], &nextLine[ nextLine.size() ]));
-  //
-  //   // byteSequence1.printHexEncodedAsciiString();
-  //
-  //   ByteSequence bestSubSequence;
-  //   float maxSubScore = 0.0;
-  //
-  //   for (unsigned char nextCharacter = 0; nextCharacter < 128; ++nextCharacter)
-  //   {
-  //     ByteSequence byteSequence2;
-  //     byteSequence2.initializeFromAsciiBytes(
-  //       std::vector<char>(byteSequence1.getByteCount(), nextCharacter));
-  //
-  //     // byteSequence2.printAsciiString();
-  //
-  //     auto xoredByteSequence =
-  //       byteSequence1.getXoredByteSequence(byteSequence2);
-  //
-  //     auto score =
-  //       CharacterFrequencyScoreCalculator::calculateByteVectorFrequencyScore(
-  //         xoredByteSequence.getBytes());
-  //
-  //     static int asdf = 0;
-  //     if (asdf == 0 && nextCharacter == 'x')
-  //     {
-  //       std::cout << "fdsa" << std::endl;
-  //       std::cout << score << std::endl;
-  //
-  //       asdf = 1;
-  //       xoredByteSequence.printAsciiString();
-  //     }
-  //
-  //     if (score > maxSubScore)
-  //     {
-  //       bestSubSequence = xoredByteSequence;
-  //       maxSubScore = score;
-  //     }
-  //   }
-  //
-  //   if (maxSubScore > maxScore)
-  //   {
-  //     bestByteSequence = byteSequence1;
-  //     decryptedByteSequence = bestSubSequence;
-  //
-  //     maxScore = maxSubScore;
-  //   }
-  // }
-  //
-  // bestByteSequence.printHexEncodedAsciiString();
-  // bestByteSequence.printAsciiString();
-  // decryptedByteSequence.printHexEncodedAsciiString();
-  // decryptedByteSequence.printAsciiString();
-  //
-  // std::cout << maxScore << std::endl;
+  static int test = 0;
 
-  runTest();
+  ByteSequence bestByteSequence, decryptedByteSequence;
+  float maxScore = 0.0;
+
+  std::ifstream fileStream("file.txt");
+  // std::ifstream fileStream("file3.txt");
+
+  std::string nextLine;
+  while (std::getline(fileStream, nextLine))
+  {
+    ByteSequence byteSequence1;
+    byteSequence1.initializeFromHexEncodedAsciiBytes(
+      std::vector<char>(&nextLine[0], &nextLine[ nextLine.size() ]));
+
+    // byteSequence1.printHexEncodedAsciiString();
+
+    ByteSequence bestSubSequence;
+    float maxSubScore = 0.0;
+
+    for (unsigned char nextCharacter = 0; nextCharacter < 128; ++nextCharacter)
+    {
+      ++test;
+
+      ByteSequence byteSequence2;
+      byteSequence2.initializeFromAsciiBytes(
+        std::vector<char>(byteSequence1.getByteCount(), nextCharacter));
+
+      // byteSequence2.printAsciiString();
+
+      auto xoredByteSequence =
+        byteSequence1.getXoredByteSequence(byteSequence2);
+
+      bool byteSequenceHasInvalidCharacter = false;
+      for (auto byte : xoredByteSequence.getBytes())
+      {
+        if (byte < 0)
+        {
+          --test;
+
+          byteSequenceHasInvalidCharacter = true;
+          break;
+        }
+      }
+
+      auto score = !byteSequenceHasInvalidCharacter
+        ? CharacterFrequencyScoreCalculator::calculateByteVectorFrequencyScore(
+          xoredByteSequence.getBytes())
+        : 0.0;
+
+      if (score > maxSubScore)
+      {
+        bestSubSequence = xoredByteSequence;
+        maxSubScore = score;
+      }
+    }
+
+    if (maxSubScore > maxScore)
+    {
+      bestByteSequence = byteSequence1;
+      decryptedByteSequence = bestSubSequence;
+
+      maxScore = maxSubScore;
+    }
+  }
+
+  bestByteSequence.printHexEncodedAsciiString();
+  bestByteSequence.printAsciiString();
+  decryptedByteSequence.printHexEncodedAsciiString();
+  decryptedByteSequence.printAsciiString();
+
+  std::cout << maxScore << std::endl;
+
+  std::cout << test << std::endl;
+
+  // runTest();
 
   return 0;
 }
