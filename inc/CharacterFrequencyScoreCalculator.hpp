@@ -5,55 +5,47 @@
 #include <map>
 #include <vector>
 
-class CharacterFrequencyScoreCalculator
-{
+class CharacterFrequencyScoreCalculator {
 public:
-  static float calculateByteVectorFrequencyScore(const std::vector<char>& bytes)
-  {
-    float alphabeticCharacterCount = (float)
-      getAlphabeticCharacterCount(bytes);
+  static float
+  calculateByteVectorFrequencyScore(const std::vector<char> &bytes) {
+    float alphabeticCharacterCount = (float)getAlphabeticCharacterCount(bytes);
 
     auto frequencyMap = createEmptyFrequencyMap();
-    for (auto nextCharacter : bytes)
-    {
+    for (auto nextCharacter : bytes) {
       nextCharacter = getLowerCaseAsciiByte(nextCharacter);
 
-      if (frequencyMap.find(nextCharacter) != frequencyMap.end())
-      {
-        frequencyMap[ nextCharacter ] += 1 / alphabeticCharacterCount;
+      if (frequencyMap.find(nextCharacter) != frequencyMap.end()) {
+        frequencyMap[nextCharacter] += 1 / alphabeticCharacterCount;
+      } else if (isWhitelistedCharacter(nextCharacter)) {
+        frequencyMap[nextCharacter] += 0.5f / (float)bytes.size();
+      } else if (!isSpace(nextCharacter)) {
+        frequencyMap[nextCharacter] += 1 / (float)bytes.size();
       }
     }
 
     auto naturalFrequencyMap = createNaturalFrequencyMap();
 
-    auto frequencyVector = createFrequencyVector(frequencyMap);
-    auto naturalFrequencyVector = createFrequencyVector(naturalFrequencyMap);
+    float preScore = 0.0;
+    for (auto it1 = frequencyMap.begin(); it1 != frequencyMap.end(); ++it1) {
+      preScore += std::abs(it1->second - naturalFrequencyMap[it1->first]);
+    }
 
-    auto normalizedFrequencyVector = getNormalizedVector(frequencyVector);
-    auto normalizedNaturalFrequencyVector =
-      getNormalizedVector(naturalFrequencyVector);
-
-    auto differenceVector = getVectorDifference(normalizedFrequencyVector,
-      normalizedNaturalFrequencyVector);
-
-    return 1 / getVectorLength(differenceVector);
+    return 1 / preScore;
   }
 
 private:
-  static std::vector<float> createFrequencyVector(
-    const std::map<char, float>& frequencyMap)
-  {
+  static std::vector<float>
+  createFrequencyVector(const std::map<char, float> &frequencyMap) {
     std::vector<float> frequencyVector;
-    for (auto pair : frequencyMap)
-    {
+    for (auto pair : frequencyMap) {
       frequencyVector.push_back(pair.second);
     }
 
     return frequencyVector;
   }
 
-  static std::map<char, float> createNaturalFrequencyMap()
-  {
+  static std::map<char, float> createNaturalFrequencyMap() {
     std::map<char, float> naturalFrequencyMap;
 
     naturalFrequencyMap['a'] = 0.08167;
@@ -91,8 +83,7 @@ private:
     return naturalFrequencyMap;
   }
 
-  static std::map<char, float> createEmptyFrequencyMap()
-  {
+  static std::map<char, float> createEmptyFrequencyMap() {
     std::map<char, float> emptyFrequencyMap;
 
     emptyFrequencyMap['a'] = 0.0;
@@ -130,19 +121,15 @@ private:
     return emptyFrequencyMap;
   }
 
-  static size_t getAlphabeticCharacterCount(const std::vector<char>& bytes)
-  {
+  static size_t getAlphabeticCharacterCount(const std::vector<char> &bytes) {
     size_t alphaNumericCharacterCount = 0;
-    for (auto nextCharacter : bytes)
-    {
-      if (nextCharacter >= 'a' && nextCharacter <= 'z')
-      {
+    for (auto nextCharacter : bytes) {
+      if (nextCharacter >= 'a' && nextCharacter <= 'z') {
         ++alphaNumericCharacterCount;
         continue;
       }
 
-      if (nextCharacter >= 'A' && nextCharacter <= 'Z')
-      {
+      if (nextCharacter >= 'A' && nextCharacter <= 'Z') {
         ++alphaNumericCharacterCount;
         continue;
       }
@@ -151,50 +138,30 @@ private:
     return alphaNumericCharacterCount;
   }
 
-  static char getLowerCaseAsciiByte(char asciiByte)
-  {
-    if (asciiByte >= 'A' && asciiByte <= 'Z')
-    {
+  static char getLowerCaseAsciiByte(char asciiByte) {
+    if (asciiByte >= 'A' && asciiByte <= 'Z') {
       return asciiByte - 'A' + 'a';
     }
 
     return asciiByte;
   }
 
-  static std::vector<float> getNormalizedVector(const std::vector<float>& vec)
-  {
-    float vectorLength = getVectorLength(vec);
+  static bool isSpace(char c) { return c == ' '; }
 
-    std::vector<float> normalizedVector;
-    for (auto value : vec)
-    {
-      normalizedVector.push_back(value / vectorLength);
+  static bool isWhitelistedCharacter(char c) {
+    switch (c) {
+    case '!':
+    case '\"':
+    case '\'':
+    case '.':
+    case ':':
+    case ';':
+    case ',':
+    case '?':
+      return true;
+    default:
+      return false;
     }
-
-    return normalizedVector;
-  }
-
-  static std::vector<float> getVectorDifference(const std::vector<float>& v1,
-    const std::vector<float>& v2)
-  {
-    std::vector<float> differenceVector;
-    for (auto it1 = v1.begin(), it2 = v2.begin(); it1 != v1.end(); ++it1, ++it2)
-    {
-      differenceVector.push_back(*it1 - *it2);
-    }
-
-    return differenceVector;
-  }
-
-  static float getVectorLength(const std::vector<float>& vec)
-  {
-    float sum = 0.0;
-    for (auto value : vec)
-    {
-      sum += value * value;
-    }
-
-    return std::sqrt(sum);
   }
 };
 
