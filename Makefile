@@ -5,7 +5,7 @@ CFLAGS=-std=c++0x -Wall -I$(IDIR)
 ODIR=obj
 LDIR =../lib
 
-LIBS=-lm
+LIBS=-lm -lssl -lcrypto
 
 _DEPS = ByteSequence.hpp CharacterFrequencyScoreCalculator.hpp debug.hpp Decryptor.hpp Encryptor.hpp
 DEPS = $(patsubst %, $(IDIR)/%, $(_DEPS))
@@ -31,7 +31,10 @@ CHALLENGE_5_OBJ = $(patsubst %, $(ODIR)/%, $(_CHALLENGE_5_OBJ))
 _CHALLENGE_6_OBJ = challenge6.o
 CHALLENGE_6_OBJ = $(patsubst %, $(ODIR)/%, $(_CHALLENGE_6_OBJ))
 
-all: challenge2 challenge6
+_CHALLENGE_7_OBJ = challenge7.o
+CHALLENGE_7_OBJ = $(patsubst %, $(ODIR)/%, $(_CHALLENGE_7_OBJ))
+
+all: challenge1 challenge2 challenge3 challenge4 challenge5 challenge6 challenge7
 
 challenge1: $(CHALLENGE_1_OBJ)
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
@@ -49,6 +52,9 @@ challenge5: $(CHALLENGE_5_OBJ)
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 challenge6: $(CHALLENGE_6_OBJ)
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+challenge7: $(CHALLENGE_7_OBJ)
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 .PHONY: clean

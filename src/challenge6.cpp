@@ -2,7 +2,7 @@
 #include <vector>
 
 #include "ByteSequence.hpp"
-#include "Decryptor.hpp"
+#include "Cracker.hpp"
 #include "Encryptor.hpp"
 
 int main(int argc, char *argv[]) {
@@ -17,8 +17,8 @@ int main(int argc, char *argv[]) {
   }
 
   auto keyByteSequence =
-      Decryptor::getKeyFromRepeatingKeyXorEncryptedByteSequence(
-          fileByteSequence);
+      Cracker::getKeyFromRepeatingKeyXorEncryptedByteSequence(fileByteSequence,
+                                                              100, 3);
 
   auto plaintextByteSequence =
       Encryptor::getRepeatingKeyXorEncryptedByteSequence(fileByteSequence,

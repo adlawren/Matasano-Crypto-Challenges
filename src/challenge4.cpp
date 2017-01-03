@@ -4,7 +4,7 @@
 
 #include "ByteSequence.hpp"
 #include "CharacterFrequencyScoreCalculator.hpp"
-#include "Decryptor.hpp"
+#include "Cracker.hpp"
 
 int main(int argc, char *argv[]) {
   ByteSequence bestPlaintextByteSequence;
@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
     nextByteSequence.initializeFromHexEncodedAsciiBytes(
         std::vector<char>(&nextLine[0], &nextLine[nextLine.size()]));
 
-    auto nextKey = Decryptor::getKeyFromSingleCharacterXorEncryptedByteSequence(
+    auto nextKey = Cracker::getKeyFromSingleCharacterXorEncryptedByteSequence(
         nextByteSequence);
 
     ByteSequence keyByteSequence;

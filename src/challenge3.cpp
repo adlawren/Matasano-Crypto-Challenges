@@ -3,7 +3,7 @@
 #include <vector>
 
 #include "ByteSequence.hpp"
-#include "Decryptor.hpp"
+#include "Cracker.hpp"
 
 int main(int argc, char *argv[]) {
   ByteSequence fileByteSequence;
@@ -16,7 +16,7 @@ int main(int argc, char *argv[]) {
         std::vector<char>(&nextLine[0], &nextLine[nextLine.size()]));
   }
 
-  auto key = Decryptor::getKeyFromSingleCharacterXorEncryptedByteSequence(
+  auto key = Cracker::getKeyFromSingleCharacterXorEncryptedByteSequence(
       fileByteSequence);
 
   ByteSequence keyByteSequence;
