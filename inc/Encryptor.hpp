@@ -1,12 +1,12 @@
 #ifndef __ENCRYPTOR_HPP__
 #define __ENCRYPTOR_HPP__
 
-#include "ByteSequence.hpp"
-
 #include <openssl/conf.h>
 #include <openssl/err.h>
 #include <openssl/evp.h>
 #include <openssl/ssl.h>
+
+#include "ByteSequence.hpp"
 
 class Encryptor {
 public:

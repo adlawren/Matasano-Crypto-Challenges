@@ -1,6 +1,11 @@
 #ifndef __DECRYPTOR_HPP__
 #define __DECRYPTOR_HPP__
 
+#include <openssl/conf.h>
+#include <openssl/err.h>
+#include <openssl/evp.h>
+#include <openssl/ssl.h>
+
 #include "ByteSequence.hpp"
 #include "Encryptor.hpp"
 
