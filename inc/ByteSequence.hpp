@@ -75,6 +75,20 @@ public:
     return bitCount;
   }
 
+  ByteSequence getPaddedByteSequence(unsigned blockByteSize) const {
+    ByteSequence paddedByteSequence;
+    paddedByteSequence.initializeFromAsciiBytes(*_bytes.get());
+
+    auto missingByteCount =
+        blockByteSize - paddedByteSequence.getByteCount() % blockByteSize;
+    if (missingByteCount != 0) {
+      paddedByteSequence.appendAsciiBytes(
+          std::vector<char>(missingByteCount, missingByteCount));
+    }
+
+    return paddedByteSequence;
+  }
+
   ByteSequence getSubSequence(unsigned index, unsigned length) const {
     assert(index < _bytes.get()->size());
     assert(index + length <= _bytes.get()->size());

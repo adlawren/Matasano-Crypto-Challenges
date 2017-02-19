@@ -11,15 +11,15 @@
 class Encryptor {
 public:
   static ByteSequence getAES128BitCBCModeEncryptedByteSequence(
-      const ByteSequence &byteSequence, const ByteSequence &keyByteSequence) {
+      const ByteSequence &byteSequence, const ByteSequence &keyByteSequence,
+      const ByteSequence &initializationVectorByteSequence) {
     const size_t blockSize = 16;
 
     assert(byteSequence.getByteCount() % blockSize == 0);
 
     ByteSequence previousCiphertextBlockByteSequence;
     previousCiphertextBlockByteSequence.initializeFromAsciiBytes(
-        std::vector<char>(blockSize,
-                          0)); // Initialization Vector
+        initializationVectorByteSequence.getBytes());
 
     ByteSequence encryptedByteSequence;
     for (unsigned i = 0; i < byteSequence.getByteCount() / blockSize; ++i) {
@@ -48,6 +48,48 @@ public:
     const size_t blockSize = 16;
 
     assert(byteSequence.getByteCount() % blockSize == 0);
+    assert(keyByteSequence.getByteCount() == blockSize);
+
+    ByteSequence ciphertextByteSequence;
+
+    unsigned blockCount = byteSequence.getByteCount() / blockSize;
+    for (unsigned i = 0; i < blockCount; ++i) {
+      auto nextBlockByteSequence =
+          byteSequence.getSubSequence(i * blockSize, blockSize);
+
+      auto nextBlockCiphertextByteSequence =
+          get16ByteAES128BitECBModeEncryptedByteSequence(nextBlockByteSequence,
+                                                         keyByteSequence);
+
+      ciphertextByteSequence.appendAsciiBytes(
+          nextBlockCiphertextByteSequence.getBytes());
+    }
+
+    return ciphertextByteSequence;
+  }
+
+  static ByteSequence
+  getRepeatingKeyXorEncryptedByteSequence(const ByteSequence &byteSequence,
+                                          const ByteSequence &keyByteSequence) {
+    std::vector<char> encryptedBytes(byteSequence.getBytes());
+    auto keyBytes = keyByteSequence.getBytes();
+
+    for (size_t i = 0; i < encryptedBytes.size(); ++i) {
+      encryptedBytes[i] ^= keyBytes[i % keyBytes.size()];
+    }
+
+    ByteSequence encryptedByteSequence;
+    encryptedByteSequence.initializeFromAsciiBytes(encryptedBytes);
+
+    return encryptedByteSequence;
+  }
+
+private:
+  static ByteSequence get16ByteAES128BitECBModeEncryptedByteSequence(
+      const ByteSequence &byteSequence, const ByteSequence &keyByteSequence) {
+    const size_t blockSize = 16;
+
+    assert(byteSequence.getByteCount() == blockSize);
     assert(keyByteSequence.getByteCount() == blockSize);
 
     SSL_load_error_strings();
@@ -88,22 +130,6 @@ public:
         &ciphertextString[0], &ciphertextString[ciphertextString.length()]));
 
     return ciphertextByteSequence;
-  }
-
-  static ByteSequence
-  getRepeatingKeyXorEncryptedByteSequence(const ByteSequence &byteSequence,
-                                          const ByteSequence &keyByteSequence) {
-    std::vector<char> encryptedBytes(byteSequence.getBytes());
-    auto keyBytes = keyByteSequence.getBytes();
-
-    for (size_t i = 0; i < encryptedBytes.size(); ++i) {
-      encryptedBytes[i] ^= keyBytes[i % keyBytes.size()];
-    }
-
-    ByteSequence encryptedByteSequence;
-    encryptedByteSequence.initializeFromAsciiBytes(encryptedBytes);
-
-    return encryptedByteSequence;
   }
 };
 

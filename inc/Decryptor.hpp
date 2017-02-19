@@ -14,7 +14,8 @@
 class Decryptor {
 public:
   static ByteSequence decryptAES128BitCBCModeEncryptedByteSequence(
-      const ByteSequence &byteSequence, const ByteSequence &keyByteSequence) {
+      const ByteSequence &byteSequence, const ByteSequence &keyByteSequence,
+      const ByteSequence &initializationVectorByteSequence) {
     const size_t blockSize = 16;
 
     assert(byteSequence.getByteCount() % blockSize == 0);
@@ -27,8 +28,7 @@ public:
                 .getBytes());
       } else {
         previousCiphertextBlockByteSequence.initializeFromAsciiBytes(
-            std::vector<char>(blockSize,
-                              0)); // Initialization Vector
+            initializationVectorByteSequence.getBytes());
       }
 
       auto blockByteSequence =
@@ -64,6 +64,33 @@ public:
     const size_t blockSize = 16;
 
     assert(encryptedByteSequence.getByteCount() % blockSize == 0);
+    assert(keyByteSequence.getByteCount() == blockSize);
+
+    ByteSequence plaintextByteSequence;
+
+    unsigned blockCount = encryptedByteSequence.getByteCount() / blockSize;
+    for (unsigned i = 0; i < blockCount; ++i) {
+      auto nextBlockByteSequence =
+          encryptedByteSequence.getSubSequence(i * blockSize, blockSize);
+
+      auto nextBlockPlaintextByteSequence =
+          decrypt16ByteAES128BitECBModeEncryptedByteSequence(
+              nextBlockByteSequence, keyByteSequence);
+
+      plaintextByteSequence.appendAsciiBytes(
+          nextBlockPlaintextByteSequence.getBytes());
+    }
+
+    return plaintextByteSequence;
+  }
+
+private:
+  static ByteSequence decrypt16ByteAES128BitECBModeEncryptedByteSequence(
+      const ByteSequence &encryptedByteSequence,
+      const ByteSequence &keyByteSequence) {
+    const size_t blockSize = 16;
+
+    assert(encryptedByteSequence.getByteCount() == blockSize);
     assert(keyByteSequence.getByteCount() == blockSize);
 
     SSL_load_error_strings();

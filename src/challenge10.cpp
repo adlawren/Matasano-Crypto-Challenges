@@ -22,9 +22,13 @@ int main(int argc, char *argv[]) {
   keyByteSequence.initializeFromAsciiBytes(
       std::vector<char>(&keyString[0], &keyString[keyString.size()]));
 
+  ByteSequence initializationVectorByteSequence;
+  initializationVectorByteSequence.initializeFromAsciiBytes(
+      std::vector<char>(16, 0));
+
   auto decryptedByteSequence =
-      Decryptor::decryptAES128BitCBCModeEncryptedByteSequence(byteSequence,
-                                                              keyByteSequence);
+      Decryptor::decryptAES128BitCBCModeEncryptedByteSequence(
+          byteSequence, keyByteSequence, initializationVectorByteSequence);
 
   decryptedByteSequence.printAsciiString();
 

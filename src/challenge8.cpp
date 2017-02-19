@@ -37,23 +37,8 @@ int main(int argc, char *argv[]) {
             byteSequenceAverageHammingDistancePairs.end(),
             [](const std::pair<ByteSequence, float> &pair1,
                const std::pair<ByteSequence, float> &pair2) {
-              return pair1.second > pair2.second;
+              return pair1.second < pair2.second;
             });
-
-  auto average = 0.0f;
-  for (unsigned i = 1; i < byteSequenceAverageHammingDistancePairs.size();
-       ++i) {
-    average += byteSequenceAverageHammingDistancePairs[i].second /
-               byteSequenceAverageHammingDistancePairs.size();
-  }
-
-  auto differenceVariance = 0.0f;
-  for (unsigned i = 1; i < byteSequenceAverageHammingDistancePairs.size();
-       ++i) {
-    auto temp = byteSequenceAverageHammingDistancePairs[i].second - average;
-    differenceVariance +=
-        (temp * temp) / byteSequenceAverageHammingDistancePairs.size();
-  }
 
   auto quartile1 = 0.0f;
   if ((byteSequenceAverageHammingDistancePairs.size() + 1) % 4 == 0) {
