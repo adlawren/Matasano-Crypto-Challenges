@@ -125,7 +125,31 @@ public:
     return *this;
   }
 
-  bool operator<(const ByteSequence &byteSequence) { return false; }
+  bool operator==(const ByteSequence &byteSequence) const {
+    assert(_bytes.get()->size() == byteSequence.getByteCount());
+
+    auto otherBytes = *byteSequence._bytes.get();
+    for (unsigned i = 0; i < _bytes.get()->size(); ++i) {
+      if (otherBytes[i] != (*_bytes.get())[i]) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  bool operator<(const ByteSequence &byteSequence) const {
+    assert(_bytes.get()->size() == byteSequence.getByteCount());
+
+    auto otherBytes = *byteSequence._bytes.get();
+    for (unsigned i = 0; i < _bytes.get()->size(); ++i) {
+      if (otherBytes[i] > (*_bytes.get())[i]) {
+        return true;
+      }
+    }
+
+    return false;
+  }
 
   void printHexEncodedAsciiString() const {
     auto hexEncodedBytes = getHexEncodedAsciiBytes(*_bytes.get());
