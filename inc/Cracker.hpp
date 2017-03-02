@@ -2,14 +2,17 @@
 #define __CRACKER_HPP__
 
 #include <algorithm>
+#include <functional>
 #include <openssl/conf.h>
 #include <openssl/err.h>
 #include <openssl/evp.h>
 #include <openssl/ssl.h>
 
+#include "BoundedBuffer.hpp"
 #include "ByteSequence.hpp"
 #include "CharacterFrequencyScoreCalculator.hpp"
 #include "Encryptor.hpp"
+#include "Oracle.hpp"
 
 class Cracker {
 public:
@@ -139,6 +142,134 @@ public:
     }
 
     return bestKeyByteSequence;
+  }
+
+  static ByteSequence getAES128BitECBModeEncryptedMysteryPlaintextByteSequence(
+      std::function<ByteSequence(const ByteSequence &)> encryptionFunction) {
+    static const char MAX_CHARACTER_GUESS = 127;
+
+    // Determine block size
+    unsigned computedBlockSize = 0;
+    {
+      const unsigned userByteSequenceLength = 1024;
+
+      ByteSequence userByteSequence;
+      userByteSequence.initializeFromAsciiBytes(
+          std::vector<char>(userByteSequenceLength, 0));
+
+      // Assert that the ciphertext is AES ECB mode encrypted
+      auto ciphertextByteSequence = encryptionFunction(userByteSequence);
+
+      assert(Oracle::isAES128BitECBModeCipherText(
+          ciphertextByteSequence,
+          Oracle::ECB_AVERAGE_NORMALIZED_HAMMING_DISTANCE_THRESHOLD));
+
+      computedBlockSize =
+          Oracle::getCiphertextBlockSize(ciphertextByteSequence, 20);
+    }
+
+    unsigned frontMysteryPlaintextByteCount =
+        Oracle::getAES128BitECBModeEncryptedFrontMysteryPlaintextLength(
+            encryptionFunction, computedBlockSize);
+
+    unsigned backMysteryPlaintextByteCount =
+        Oracle::getAES128BitECBModeEncryptedBackMysteryPlaintextLength(
+            encryptionFunction, computedBlockSize,
+            frontMysteryPlaintextByteCount);
+
+    ByteSequence decryptedMysteryPlaintext;
+    {
+      // Bounded buffer associated with the last (block size - 1) worth
+      // of decrypted plaintext bytes
+      BoundedBuffer<char> lastDecryptedPlaintextBytesBuffer(computedBlockSize -
+                                                            1);
+
+      for (unsigned mysteryPlaintextByteIndex = 0;
+           mysteryPlaintextByteIndex < backMysteryPlaintextByteCount;
+           ++mysteryPlaintextByteIndex) {
+        // Compute the expected ciphertext
+        unsigned nextUserByteSequenceLength =
+            computedBlockSize - 1 -
+            (mysteryPlaintextByteIndex % computedBlockSize);
+
+        ByteSequence userByteSequence;
+        userByteSequence.appendAsciiBytes(std::vector<char>(
+            computedBlockSize -
+                (frontMysteryPlaintextByteCount % computedBlockSize),
+            0));
+        userByteSequence.appendAsciiBytes(
+            std::vector<char>(nextUserByteSequenceLength, 0));
+
+        auto expectedCiphertextByteSequence =
+            encryptionFunction(userByteSequence)
+                .getSubSequence(
+                    ((frontMysteryPlaintextByteCount / computedBlockSize) + 1 +
+                     (mysteryPlaintextByteIndex / computedBlockSize)) *
+                        computedBlockSize,
+                    computedBlockSize);
+
+        // Enumerate the possible ciphertexts
+        userByteSequence.initializeFromAsciiBytes(std::vector<char>(0));
+        if (decryptedMysteryPlaintext.getByteCount() < computedBlockSize - 1) {
+          userByteSequence.appendAsciiBytes(std::vector<char>(
+              computedBlockSize - decryptedMysteryPlaintext.getByteCount() - 1,
+              0));
+        }
+
+        unsigned decryptedByteCount =
+            decryptedMysteryPlaintext.getByteCount() < computedBlockSize - 1
+                ? decryptedMysteryPlaintext.getByteCount()
+                : computedBlockSize - 1;
+
+        auto it = lastDecryptedPlaintextBytesBuffer.begin();
+        std::vector<char> decryptedBytes;
+        for (unsigned i = 0; i < decryptedByteCount; ++i, ++it) {
+          decryptedBytes.push_back(*it);
+        }
+
+        std::reverse(decryptedBytes.begin(), decryptedBytes.end());
+        userByteSequence.appendAsciiBytes(decryptedBytes);
+
+        char nextCharacter = 0;
+        for (; nextCharacter < MAX_CHARACTER_GUESS; ++nextCharacter) {
+          ByteSequence nextPlaintextByteSequenceGuess;
+          nextPlaintextByteSequenceGuess.appendAsciiBytes(std::vector<char>(
+              computedBlockSize -
+                  (frontMysteryPlaintextByteCount % computedBlockSize),
+              0));
+          nextPlaintextByteSequenceGuess.appendAsciiBytes(
+              userByteSequence.getBytes());
+          nextPlaintextByteSequenceGuess.appendAsciiBytes(
+              std::vector<char>(1, nextCharacter));
+
+          auto nextCiphertextByteSequenceGuess =
+              encryptionFunction(nextPlaintextByteSequenceGuess)
+                  .getSubSequence(
+                      ((frontMysteryPlaintextByteCount / computedBlockSize) +
+                       1) *
+                          computedBlockSize,
+                      computedBlockSize);
+
+          if (nextCiphertextByteSequenceGuess ==
+              expectedCiphertextByteSequence) {
+            char nextDecryptedMysteryPlaintextCharacter = nextCharacter;
+
+            decryptedMysteryPlaintext.appendAsciiBytes(
+                std::vector<char>(1, nextDecryptedMysteryPlaintextCharacter));
+
+            lastDecryptedPlaintextBytesBuffer.push(
+                nextDecryptedMysteryPlaintextCharacter);
+
+            break;
+          }
+        }
+
+        // Ensure a guess matched the expected ciphertext
+        assert(nextCharacter != 127);
+      }
+    }
+
+    return decryptedMysteryPlaintext;
   }
 };
 

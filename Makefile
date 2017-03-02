@@ -1,6 +1,6 @@
 IDIR =inc
 CC=g++
-CFLAGS=-std=c++0x -Wall -I$(IDIR)
+CFLAGS=-g -std=c++0x -Wall -I$(IDIR)
 
 ODIR=obj
 LDIR =../lib
@@ -49,7 +49,10 @@ CHALLENGE_11_OBJ = $(patsubst %, $(ODIR)/%, $(_CHALLENGE_11_OBJ))
 _CHALLENGE_12_OBJ = challenge12.o
 CHALLENGE_12_OBJ = $(patsubst %, $(ODIR)/%, $(_CHALLENGE_12_OBJ))
 
-all: challenge1 challenge2 challenge3 challenge4 challenge5 challenge6 challenge7 challenge8 challenge9 challenge10 challenge11 challenge12
+_CHALLENGE_13_OBJ = challenge13.o
+CHALLENGE_13_OBJ = $(patsubst %, $(ODIR)/%, $(_CHALLENGE_13_OBJ))
+
+all: challenge1 challenge2 challenge3 challenge4 challenge5 challenge6 challenge7 challenge8 challenge9 challenge10 challenge11 challenge12 challenge13
 
 challenge1: $(CHALLENGE_1_OBJ)
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
@@ -85,6 +88,9 @@ challenge11: $(CHALLENGE_11_OBJ)
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 challenge12: $(CHALLENGE_12_OBJ)
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+challenge13: $(CHALLENGE_13_OBJ)
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 .PHONY: clean

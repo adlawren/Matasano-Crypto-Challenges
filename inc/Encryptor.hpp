@@ -69,6 +69,33 @@ public:
   }
 
   static ByteSequence
+  getAES128BitECBModeEncryptedByteSequenceWithAppendedPlaintext(
+      const ByteSequence &plaintextByteSequence,
+      const ByteSequence &keyByteSequence,
+      const ByteSequence &frontPlaintextByteSequence,
+      const ByteSequence &backPlaintextByteSequence) {
+    const unsigned blockSize = 16;
+
+    assert(blockSize == keyByteSequence.getByteCount());
+
+    ByteSequence joinedPlaintextByteSequence;
+    joinedPlaintextByteSequence.appendAsciiBytes(
+        frontPlaintextByteSequence.getBytes());
+    joinedPlaintextByteSequence.appendAsciiBytes(
+        plaintextByteSequence.getBytes());
+    joinedPlaintextByteSequence.appendAsciiBytes(
+        backPlaintextByteSequence.getBytes());
+
+    if (joinedPlaintextByteSequence.getByteCount() % blockSize != 0) {
+      joinedPlaintextByteSequence =
+          joinedPlaintextByteSequence.getPaddedByteSequence(blockSize);
+    }
+
+    return getAES128BitECBModeEncryptedByteSequence(joinedPlaintextByteSequence,
+                                                    keyByteSequence);
+  }
+
+  static ByteSequence
   getRepeatingKeyXorEncryptedByteSequence(const ByteSequence &byteSequence,
                                           const ByteSequence &keyByteSequence) {
     std::vector<char> encryptedBytes(byteSequence.getBytes());

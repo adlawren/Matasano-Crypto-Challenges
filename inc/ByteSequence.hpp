@@ -8,6 +8,23 @@
 
 class ByteSequence {
 public:
+  static ByteSequence getRandomByteSequence(unsigned byteCount) {
+    const unsigned maxByteValue = 128;
+
+    static int randomNumberGenerationSeed = time(0);
+    srand(randomNumberGenerationSeed++);
+
+    std::vector<char> randomBytes;
+    for (unsigned i = 0; i < byteCount; ++i) {
+      randomBytes.push_back(rand() % maxByteValue);
+    }
+
+    ByteSequence randomByteSequence;
+    randomByteSequence.initializeFromAsciiBytes(randomBytes);
+
+    return randomByteSequence;
+  }
+
   ByteSequence() { _bytes.reset(new std::vector<char>()); }
 
   ByteSequence(const ByteSequence &byteSequence) {
@@ -138,13 +155,15 @@ public:
     return true;
   }
 
-  bool operator<(const ByteSequence &byteSequence) const {
-    assert(_bytes.get()->size() == byteSequence.getByteCount());
+  bool operator<(const ByteSequence &rhs) const {
+    assert(getByteCount() == rhs.getByteCount());
 
-    auto otherBytes = *byteSequence._bytes.get();
-    for (unsigned i = 0; i < _bytes.get()->size(); ++i) {
-      if (otherBytes[i] > (*_bytes.get())[i]) {
+    auto lhsBytes = getBytes(), rhsBytes = rhs.getBytes();
+    for (unsigned i = 0; i < getByteCount(); ++i) {
+      if (lhsBytes[i] < rhsBytes[i]) {
         return true;
+      } else if (lhsBytes[i] > rhsBytes[i]) {
+        return false;
       }
     }
 
