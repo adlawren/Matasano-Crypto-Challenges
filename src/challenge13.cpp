@@ -1,8 +1,6 @@
-#include <algorithm>
 #include <cassert>
 #include <iostream>
 #include <map>
-#include <sstream>
 #include <vector>
 
 #include "ByteSequence.hpp"

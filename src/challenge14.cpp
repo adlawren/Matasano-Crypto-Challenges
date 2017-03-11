@@ -19,8 +19,17 @@ int main(int argc, char *argv[]) {
       "YmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBqdXN0IHRvIHNheSBoaQpEaWQg"
       "eW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUgYnkK";
 
-  ByteSequence frontMysteryPlaintextByteSequence /* Unused */,
-      backMysteryPlaintextByteSequence;
+  const unsigned maxRandomPrependedByteCount = 100;
+
+  srand(time(0));
+  unsigned randomPrependedByteCount = rand() % maxRandomPrependedByteCount;
+  std::cout << "Random prepended byte count: " << randomPrependedByteCount
+            << std::endl;
+
+  ByteSequence frontMysteryPlaintextByteSequence =
+                   ByteSequence::getRandomByteSequence(
+                       randomPrependedByteCount),
+               backMysteryPlaintextByteSequence;
   backMysteryPlaintextByteSequence.initializeFromBase64EncodedAsciiBytes(
       std::vector<char>(
           &base64EncodedBackMysteryPlaintext[0],
