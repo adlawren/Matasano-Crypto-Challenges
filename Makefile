@@ -58,7 +58,10 @@ CHALLENGE_14_OBJ = $(patsubst %, $(ODIR)/%, $(_CHALLENGE_14_OBJ))
 _CHALLENGE_15_OBJ = challenge15.o
 CHALLENGE_15_OBJ = $(patsubst %, $(ODIR)/%, $(_CHALLENGE_15_OBJ))
 
-all: challenge1 challenge2 challenge3 challenge4 challenge5 challenge6 challenge7 challenge8 challenge9 challenge10 challenge11 challenge12 challenge13 challenge14 challenge15
+_CHALLENGE_16_OBJ = challenge16.o
+CHALLENGE_16_OBJ = $(patsubst %, $(ODIR)/%, $(_CHALLENGE_16_OBJ))
+
+all: challenge1 challenge2 challenge3 challenge4 challenge5 challenge6 challenge7 challenge8 challenge9 challenge10 challenge11 challenge12 challenge13 challenge14 challenge15 challenge16
 
 challenge1: $(CHALLENGE_1_OBJ)
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
@@ -103,6 +106,9 @@ challenge14: $(CHALLENGE_14_OBJ)
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 challenge15: $(CHALLENGE_15_OBJ)
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+challenge16: $(CHALLENGE_16_OBJ)
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 .PHONY: clean

@@ -7,7 +7,7 @@
 #include <vector>
 
 class ByteSequence {
-public:
+ public:
   static ByteSequence getRandomByteSequence(unsigned byteCount) {
     const unsigned maxByteValue = 128;
 
@@ -25,7 +25,66 @@ public:
     return randomByteSequence;
   }
 
-  ByteSequence() { _bytes.reset(new std::vector<char>()); }
+  static std::vector<ByteSequence> getSplitSingleByteDelimitedByteSequences(
+      const ByteSequence &byteSequence, char delimeter) {
+    if (byteSequence.getByteCount() == 0) {
+      return std::vector<ByteSequence>{byteSequence};
+    }
+
+    auto delimeterIndex = byteSequence.getByteIndex(delimeter);
+    if (delimeterIndex < 0) {
+      return std::vector<ByteSequence>{byteSequence};
+    } else {
+      std::vector<ByteSequence> delimitedByteSequences;
+
+      delimitedByteSequences.push_back(
+          byteSequence.getSubSequence(0, delimeterIndex));
+
+      auto otherdelimitedByteSequences =
+          getSplitSingleByteDelimitedByteSequences(
+              byteSequence.getSubSequence(delimeterIndex + 1), delimeter);
+
+      delimitedByteSequences.insert(std::end(delimitedByteSequences),
+                                    std::begin(otherdelimitedByteSequences),
+                                    std::end(otherdelimitedByteSequences));
+
+      return delimitedByteSequences;
+    }
+  }
+
+  static std::vector<std::pair<ByteSequence, ByteSequence>>
+  getParsedTupleListFromEncodedByteSequence(
+      const ByteSequence &encodedByteSequence, char primaryDelimiter,
+      char secondaryDelimiter) {
+    std::vector<std::pair<ByteSequence, ByteSequence>> byteSequenceTupleList;
+
+    std::vector<ByteSequence> primaryDelimitedByteSequences =
+        getSplitSingleByteDelimitedByteSequences(encodedByteSequence,
+                                                 primaryDelimiter);
+    for (auto primaryDelimitedByteSequence : primaryDelimitedByteSequences) {
+      auto secondaryDelimitedByteSequences =
+          getSplitSingleByteDelimitedByteSequences(primaryDelimitedByteSequence,
+                                                   secondaryDelimiter);
+
+      assert(secondaryDelimitedByteSequences.size() > 0);
+
+      if (secondaryDelimitedByteSequences.size() == 1) {
+        ByteSequence emptyByteSequence;
+        byteSequenceTupleList.push_back(std::pair<ByteSequence, ByteSequence>(
+            secondaryDelimitedByteSequences[0], emptyByteSequence));
+      } else {
+        byteSequenceTupleList.push_back(std::pair<ByteSequence, ByteSequence>(
+            secondaryDelimitedByteSequences[0],
+            secondaryDelimitedByteSequences[1]));
+      }
+    }
+
+    return byteSequenceTupleList;
+  }
+
+  ByteSequence() {
+    _bytes.reset(new std::vector<char>());
+  }
 
   ByteSequence(const ByteSequence &byteSequence) {
     _bytes.reset(new std::vector<char>(*byteSequence._bytes.get()));
@@ -68,9 +127,23 @@ public:
     return str;
   }
 
-  const std::vector<char> &getBytes() const { return *_bytes.get(); };
+  int getByteIndex(char byte) const {
+    for (unsigned i = 0; i < _bytes.get()->size(); ++i) {
+      if ((*_bytes.get())[i] == byte) {
+        return i;
+      }
+    }
 
-  size_t getByteCount() const { return _bytes.get()->size(); }
+    return -1;
+  }
+
+  const std::vector<char> &getBytes() const {
+    return *_bytes.get();
+  };
+
+  size_t getByteCount() const {
+    return _bytes.get()->size();
+  }
 
   std::string getHexEncodedAsciiString() const {
     auto hexEncodedByteVector = getHexEncodedAsciiBytes(*_bytes.get());
@@ -106,12 +179,12 @@ public:
     return paddedByteSequence;
   }
 
-  ByteSequence getSubSequence(unsigned index, unsigned length) const {
+  ByteSequence getSubSequence(unsigned index, int length = -1) const {
     assert(index < _bytes.get()->size());
-    assert(index + length <= _bytes.get()->size());
-
     auto it1 = _bytes.get()->begin() + index;
-    auto it2 = _bytes.get()->begin() + index + length;
+
+    auto it2 = length > 0 ? _bytes.get()->begin() + index + length
+                          : _bytes.get()->end();
 
     ByteSequence subSequence;
     subSequence.initializeFromAsciiBytes(std::vector<char>(it1, it2));
@@ -128,7 +201,9 @@ public:
     return xoredByteSequence;
   }
 
-  void printAsciiString() const { printVector<char>(*_bytes.get()); }
+  void printAsciiString() const {
+    printVector<char>(*_bytes.get());
+  }
 
   void printBase64EncodedString() const {
     auto base64EncodedBytes = getBase64EncodedAsciiBytes(*_bytes.get());
@@ -155,6 +230,10 @@ public:
     return true;
   }
 
+  bool operator!=(const ByteSequence &byteSequence) const {
+    return !operator==(byteSequence);
+  }
+
   bool operator<(const ByteSequence &rhs) const {
     assert(getByteCount() == rhs.getByteCount());
 
@@ -176,7 +255,7 @@ public:
     printVector<char>(hexEncodedBytes);
   }
 
-private:
+ private:
   std::unique_ptr<std::vector<char>> _bytes;
 
   static unsigned computeHammingDistance(char byte1, char byte2) {
@@ -258,8 +337,8 @@ private:
     return hex;
   }
 
-  static std::vector<char>
-  getBase64EncodedAsciiBytes(const std::vector<char> &bytes) {
+  static std::vector<char> getBase64EncodedAsciiBytes(
+      const std::vector<char> &bytes) {
     std::vector<char> paddedBytes(bytes);
 
     const size_t unpaddedSize = bytes.size();
@@ -339,8 +418,8 @@ private:
     return decodedBytes;
   }
 
-  static std::vector<char>
-  getDecodedHexEncodedAsciiBytes(const std::vector<char> &hexEncodedBytes) {
+  static std::vector<char> getDecodedHexEncodedAsciiBytes(
+      const std::vector<char> &hexEncodedBytes) {
     assert(hexEncodedBytes.size() % 2 == 0);
 
     std::vector<char> decodedBytes(std::div(hexEncodedBytes.size(), 2).quot);
@@ -352,8 +431,8 @@ private:
     return decodedBytes;
   }
 
-  static std::vector<char>
-  getHexEncodedAsciiBytes(const std::vector<char> &bytes) {
+  static std::vector<char> getHexEncodedAsciiBytes(
+      const std::vector<char> &bytes) {
     std::vector<char> hexEncodedBytes(bytes.size() * 2);
     for (size_t i = 0, j = 0; i < hexEncodedBytes.size(); i += 2, ++j) {
       hexEncodedBytes[i] =
@@ -376,15 +455,14 @@ private:
     return xoredBytes;
   }
 
-  template <typename T> void printVector(const std::vector<T> &v) const {
+  template <typename T>
+  void printVector(const std::vector<T> &v) const {
     for (auto it = v.begin(); it != v.end(); ++it) {
       std::cout << *it;
     }
 
     std::cout << std::endl;
   }
-
-  friend class ByteSequenceTests;
 };
 
-#endif // __BYTE_SEQUENCE_HPP__
+#endif  // __BYTE_SEQUENCE_HPP__

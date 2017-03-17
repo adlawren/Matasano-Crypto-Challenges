@@ -8,56 +8,10 @@
 #include "Encryptor.hpp"
 #include "Decryptor.hpp"
 
-typedef std::map<std::string, std::string> ParsedObject;
-
 static const unsigned BLOCK_SIZE = 16;
 static const unsigned RANDOM_GLOBAL_KEY_SIZE = 16;
 
 static ByteSequence randomGlobalKeyByteSequence;
-
-std::vector<std::string> splitString(const std::string &str,
-                                     const std::string &deilimeter) {
-  if (str.size() == 0) {
-    return std::vector<std::string>{str};
-  }
-
-  if (str.find(deilimeter) == std::string::npos) {
-    return std::vector<std::string>{str};
-  } else {
-    std::vector<std::string> delimitedStrings;
-
-    delimitedStrings.push_back(str.substr(0, str.find(deilimeter)));
-
-    auto otherDelimitedStrings = splitString(
-        str.substr(str.find(deilimeter) + 1, str.size()), deilimeter);
-
-    delimitedStrings.insert(std::end(delimitedStrings),
-                            std::begin(otherDelimitedStrings),
-                            std::end(otherDelimitedStrings));
-
-    return delimitedStrings;
-  }
-}
-
-ParsedObject
-getParsedObjectFromEncodedString(const std::string &encodedString) {
-  ParsedObject parsedObject;
-
-  auto ampersandDelimitedStrings = splitString(encodedString, "&");
-  for (auto ampersandDelimitedString : ampersandDelimitedStrings) {
-    auto equalsDelimitedStrings = splitString(ampersandDelimitedString, "=");
-
-    assert(equalsDelimitedStrings.size() > 0);
-
-    if (equalsDelimitedStrings.size() == 1) {
-      parsedObject[equalsDelimitedStrings[0]] = "";
-    } else {
-      parsedObject[equalsDelimitedStrings[0]] = equalsDelimitedStrings[1];
-    }
-  }
-
-  return parsedObject;
-}
 
 ByteSequence profileFor(const ByteSequence &userEmailByteSequence) {
   // Remove meta characters ('&' and '=')
@@ -100,20 +54,16 @@ ByteSequence getAES128BitECBModeEncryptedByteSequenceFromUserProfile(
   }
 }
 
-ParsedObject getDecryptedAndParsedAES128BitECBModeEncryptedUserProfile(
+std::vector<std::pair<ByteSequence, ByteSequence>>
+getDecryptedAndParsedAES128BitECBModeEncryptedUserProfile(
     const ByteSequence &encodedUserProfileByteSequence,
     const ByteSequence &keyByteSequence) {
-
   auto decryptedUserProfileByteSequence =
       Decryptor::decryptAES128BitECBModeEncryptedByteSequence(
           encodedUserProfileByteSequence, keyByteSequence);
 
-  auto encodedUserProfileBytes = decryptedUserProfileByteSequence.getBytes();
-  std::string encodedUserProfile =
-      std::string(&encodedUserProfileBytes[0],
-                  &encodedUserProfileBytes[encodedUserProfileBytes.size()]);
-
-  return getParsedObjectFromEncodedString(encodedUserProfile);
+  return ByteSequence::getParsedTupleListFromEncodedByteSequence(
+      decryptedUserProfileByteSequence, '&', '=');
 }
 
 int main(int argc, char *agv[]) {
@@ -139,14 +89,14 @@ int main(int argc, char *agv[]) {
       encryptionFunction(userEmailByteSequence);
 
   {
-    auto decryptedParsedObject =
+    auto decryptedParsedTuples =
         getDecryptedAndParsedAES128BitECBModeEncryptedUserProfile(
             encryptedUserProfileByteSequence, randomGlobalKeyByteSequence);
 
     std::cout << "Before:" << std::endl;
-    for (auto keyValuePair : decryptedParsedObject) {
-      std::cout << keyValuePair.first << " : " << keyValuePair.second
-                << std::endl;
+    for (auto keyValuePair : decryptedParsedTuples) {
+      std::cout << keyValuePair.first.getAsciiString() << " : "
+                << keyValuePair.second.getAsciiString() << std::endl;
     }
   }
 
@@ -228,14 +178,14 @@ int main(int argc, char *agv[]) {
   encryptedUserProfileByteSequence = trimmedCiphertextByteSequence;
 
   {
-    auto decryptedParsedObject =
+    auto decryptedParsedTuples =
         getDecryptedAndParsedAES128BitECBModeEncryptedUserProfile(
             encryptedUserProfileByteSequence, randomGlobalKeyByteSequence);
 
     std::cout << "After:" << std::endl;
-    for (auto keyValuePair : decryptedParsedObject) {
-      std::cout << keyValuePair.first << " : " << keyValuePair.second
-                << std::endl;
+    for (auto keyValuePair : decryptedParsedTuples) {
+      std::cout << keyValuePair.first.getAsciiString() << " : "
+                << keyValuePair.second.getAsciiString() << std::endl;
     }
   }
 

@@ -2,7 +2,7 @@
 
 #include "ByteSequence.hpp"
 
-ByteSequence stripValidPKCSPadding(const ByteSequence& byteSequence) {
+ByteSequence stripPKCSPadding(const ByteSequence& byteSequence) {
   int hypothesizedPaddingAmount =
       byteSequence.getBytes()[byteSequence.getByteCount() - 1];
 
@@ -34,11 +34,11 @@ int main(int argc, char* argv[]) {
     byteSequence.printHexEncodedAsciiString();
 
     try {
-      auto strippedByteSequence = stripValidPKCSPadding(byteSequence);
+      auto strippedByteSequence = stripPKCSPadding(byteSequence);
 
       std::cout << "Stripped byte sequence:" << std::endl;
       strippedByteSequence.printHexEncodedAsciiString();
-    } catch (std::runtime_error& re) {
+    } catch (const std::runtime_error& re) {
       std::cout << "Invalid PKCS padding" << std::endl;
     }
   }
@@ -53,11 +53,11 @@ int main(int argc, char* argv[]) {
     byteSequence.printHexEncodedAsciiString();
 
     try {
-      auto strippedByteSequence = stripValidPKCSPadding(byteSequence);
+      auto strippedByteSequence = stripPKCSPadding(byteSequence);
 
       std::cout << "Stripped byte sequence:" << std::endl;
       strippedByteSequence.printHexEncodedAsciiString();
-    } catch (std::runtime_error& re) {
+    } catch (const std::runtime_error& re) {
       std::cout << "Invalid PKCS padding" << std::endl;
     }
   }
@@ -72,11 +72,11 @@ int main(int argc, char* argv[]) {
     byteSequence.printHexEncodedAsciiString();
 
     try {
-      auto strippedByteSequence = stripValidPKCSPadding(byteSequence);
+      auto strippedByteSequence = stripPKCSPadding(byteSequence);
 
       std::cout << "Stripped byte sequence:" << std::endl;
       strippedByteSequence.printHexEncodedAsciiString();
-    } catch (std::runtime_error& re) {
+    } catch (const std::runtime_error& re) {
       std::cout << "Invalid PKCS padding" << std::endl;
     }
   }
