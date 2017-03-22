@@ -21,7 +21,7 @@ struct AES128BitRandomModeEncryptedByteSequenceResult {
 };
 
 class Oracle {
-public:
+ public:
   static const float ECB_AVERAGE_NORMALIZED_HAMMING_DISTANCE_THRESHOLD;
 
   static AES128BitRandomModeEncryptedByteSequenceResult
@@ -83,22 +83,22 @@ public:
     return result;
   }
 
-  static std::string
-  getAESEncryptionModeString(AES_ENCRYPTION_MODE aesEncryptionMode) {
+  static std::string getAESEncryptionModeString(
+      AES_ENCRYPTION_MODE aesEncryptionMode) {
     switch (aesEncryptionMode) {
-    case AES_ENCRYPTION_MODE::ECB:
-      return ECB_AES_ENCRYPTION_MODE_STRING;
-    case AES_ENCRYPTION_MODE::CBC:
-      return CBC_AES_ENCRYPTION_MODE_STRING;
-    default:
-      break;
+      case AES_ENCRYPTION_MODE::ECB:
+        return ECB_AES_ENCRYPTION_MODE_STRING;
+      case AES_ENCRYPTION_MODE::CBC:
+        return CBC_AES_ENCRYPTION_MODE_STRING;
+      default:
+        break;
     }
 
     return std::string("Unknown AES encryption mode");
   }
 
-  static AES_ENCRYPTION_MODE
-  getAESEncryptionMode(const std::string aesEncryptionModeString) {
+  static AES_ENCRYPTION_MODE getAESEncryptionMode(
+      const std::string aesEncryptionModeString) {
     if (aesEncryptionModeString.compare(ECB_AES_ENCRYPTION_MODE_STRING) == 0) {
       return AES_ENCRYPTION_MODE::ECB;
     }
@@ -110,9 +110,8 @@ public:
     return AES_ENCRYPTION_MODE::UNKNOWN;
   }
 
-  static unsigned
-  getCiphertextBlockSize(const ByteSequence &ciphertextByteSequence,
-                         unsigned maxKeySizeGuess) {
+  static unsigned getCiphertextBlockSize(
+      const ByteSequence &ciphertextByteSequence, unsigned maxKeySizeGuess) {
     std::map<unsigned, float> keySizeToNormalizedHammingDistanceMap;
     for (int i = 2; i < (int)maxKeySizeGuess; ++i) {
       auto blockCount = std::div(ciphertextByteSequence.getByteCount(), i).quot;
@@ -217,12 +216,34 @@ public:
     return true;
   }
 
-private:
+  static ByteSequence stripPKCSPadding(const ByteSequence &byteSequence) {
+    unsigned hypothesizedPaddingAmount =
+        byteSequence.getBytes()[byteSequence.getByteCount() - 1];
+
+    if (byteSequence.getByteCount() < hypothesizedPaddingAmount ||
+        hypothesizedPaddingAmount == 0) {
+      throw std::runtime_error("Invalid PKCS padding");
+    }
+
+    for (unsigned i = 0; i < hypothesizedPaddingAmount; ++i) {
+      if (byteSequence.getBytes()[byteSequence.getByteCount() - 1 - i] !=
+          (char)hypothesizedPaddingAmount) {
+        throw std::runtime_error("Invalid PKCS padding");
+      }
+    }
+
+    ByteSequence strippedByteSequence;
+    strippedByteSequence.initializeFromAsciiBytes(byteSequence.getBytes());
+
+    return strippedByteSequence.getSubSequence(
+        0, strippedByteSequence.getByteCount() - hypothesizedPaddingAmount);
+  }
+
+ private:
   static int randomNumberGenerationSeed;
 
-  static float
-  getAverageNormalizedHammingDistance(const ByteSequence &byteSequence,
-                                      unsigned blockSize) {
+  static float getAverageNormalizedHammingDistance(
+      const ByteSequence &byteSequence, unsigned blockSize) {
     assert(byteSequence.getByteCount() % blockSize == 0);
 
     auto averageHammingDistance = 0.0f;
@@ -297,6 +318,6 @@ private:
 int Oracle::randomNumberGenerationSeed = std::time(0);
 
 const float Oracle::ECB_AVERAGE_NORMALIZED_HAMMING_DISTANCE_THRESHOLD =
-    2.3f; // 2.20312f
+    2.3f;  // 2.20312f
 
-#endif // __ORACLE_HPP__
+#endif  // __ORACLE_HPP__

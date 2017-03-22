@@ -1,25 +1,7 @@
 #include <vector>
 
 #include "ByteSequence.hpp"
-
-ByteSequence stripPKCSPadding(const ByteSequence& byteSequence) {
-  int hypothesizedPaddingAmount =
-      byteSequence.getBytes()[byteSequence.getByteCount() - 1];
-
-  for (int i = 0; i < hypothesizedPaddingAmount; ++i) {
-    if (byteSequence.getBytes()[byteSequence.getByteCount() - 1 - i] !=
-        hypothesizedPaddingAmount) {
-      throw std::runtime_error("Invalid PKCS padding");
-    }
-  }
-
-
-  ByteSequence strippedByteSequence;
-  strippedByteSequence.initializeFromAsciiBytes(byteSequence.getBytes());
-
-  return strippedByteSequence.getSubSequence(
-      0, strippedByteSequence.getByteCount() - hypothesizedPaddingAmount);
-}
+#include "Oracle.hpp"
 
 int main(int argc, char* argv[]) {
   std::string testString = "ICE ICE BABY";
@@ -34,7 +16,7 @@ int main(int argc, char* argv[]) {
     byteSequence.printHexEncodedAsciiString();
 
     try {
-      auto strippedByteSequence = stripPKCSPadding(byteSequence);
+      auto strippedByteSequence = Oracle::stripPKCSPadding(byteSequence);
 
       std::cout << "Stripped byte sequence:" << std::endl;
       strippedByteSequence.printHexEncodedAsciiString();
@@ -53,7 +35,7 @@ int main(int argc, char* argv[]) {
     byteSequence.printHexEncodedAsciiString();
 
     try {
-      auto strippedByteSequence = stripPKCSPadding(byteSequence);
+      auto strippedByteSequence = Oracle::stripPKCSPadding(byteSequence);
 
       std::cout << "Stripped byte sequence:" << std::endl;
       strippedByteSequence.printHexEncodedAsciiString();
@@ -72,7 +54,7 @@ int main(int argc, char* argv[]) {
     byteSequence.printHexEncodedAsciiString();
 
     try {
-      auto strippedByteSequence = stripPKCSPadding(byteSequence);
+      auto strippedByteSequence = Oracle::stripPKCSPadding(byteSequence);
 
       std::cout << "Stripped byte sequence:" << std::endl;
       strippedByteSequence.printHexEncodedAsciiString();

@@ -255,6 +255,12 @@ class ByteSequence {
     printVector<char>(hexEncodedBytes);
   }
 
+  void setByteAtIndex(unsigned index, char newByteValue) {
+    assert(index < _bytes.get()->size());
+
+    (*_bytes.get())[index] = newByteValue;
+  }
+
  private:
   std::unique_ptr<std::vector<char>> _bytes;
 
