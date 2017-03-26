@@ -7,9 +7,10 @@
 #include <openssl/ssl.h>
 
 #include "ByteSequence.hpp"
+#include "LittleEndian8ByteCounterByteSequence.hpp"
 
 class Encryptor {
-public:
+ public:
   static ByteSequence getAES128BitCBCModeEncryptedByteSequence(
       const ByteSequence &byteSequence, const ByteSequence &keyByteSequence,
       const ByteSequence &initializationVectorByteSequence) {
@@ -41,6 +42,65 @@ public:
     }
 
     return encryptedByteSequence;
+  }
+
+  static ByteSequence getAES128BitCTRModeEncryptedByteSequence(
+      const ByteSequence &plaintextByteSequence,
+      const ByteSequence &keyByteSequence) {
+    const size_t blockSize = 16;
+
+    ByteSequence ciphertextByteSequence, nonceByteSequence;
+    LittleEndian8ByteCounterByteSequence
+        blockLittleEndian8ByteCounterByteSequence;
+
+    nonceByteSequence.initializeFromAsciiBytes(std::vector<char>(8, 0));
+
+    unsigned blockCount =
+        (plaintextByteSequence.getByteCount() / blockSize) + 1;
+    for (unsigned blockIndex = 0; blockIndex < blockCount; ++blockIndex) {
+      ByteSequence nextPlaintextBlockByteSequence;
+
+      unsigned remainingByteCount =
+          plaintextByteSequence.getByteCount() - (blockIndex * blockSize);
+      if (remainingByteCount >= blockSize) {
+        nextPlaintextBlockByteSequence = plaintextByteSequence.getSubSequence(
+            blockIndex * blockSize, blockSize);
+      } else {
+        nextPlaintextBlockByteSequence = plaintextByteSequence.getSubSequence(
+            blockIndex * blockSize, remainingByteCount);
+      }
+
+      ByteSequence plaintextKeyStreamByteSequence;
+      plaintextKeyStreamByteSequence.appendAsciiBytes(
+          nonceByteSequence.getBytes());
+      plaintextKeyStreamByteSequence.appendAsciiBytes(
+          blockLittleEndian8ByteCounterByteSequence.getByteSequence()
+              .getBytes());
+
+      auto ciphertextKeyStreamByteSequence =
+          Encryptor::getAES128BitECBModeEncryptedByteSequence(
+              plaintextKeyStreamByteSequence, keyByteSequence);
+
+      assert(ciphertextKeyStreamByteSequence.getByteCount() >=
+             nextPlaintextBlockByteSequence.getByteCount());
+
+      for (unsigned byteIndex = 0;
+           byteIndex < nextPlaintextBlockByteSequence.getByteCount();
+           ++byteIndex) {
+        char nextPlaintextByte =
+                 nextPlaintextBlockByteSequence.getBytes()[byteIndex],
+             nextCiphertextKeyStreamByte =
+                 ciphertextKeyStreamByteSequence.getBytes()[byteIndex];
+        ciphertextByteSequence.appendAsciiBytes(
+            std::vector<char>{nextPlaintextByte ^ nextCiphertextKeyStreamByte});
+      }
+
+      blockLittleEndian8ByteCounterByteSequence =
+          blockLittleEndian8ByteCounterByteSequence
+              .getIncrementedLittleEndian8ByteCounterByteSequence();
+    }
+
+    return ciphertextByteSequence;
   }
 
   static ByteSequence getAES128BitECBModeEncryptedByteSequence(
@@ -95,9 +155,8 @@ public:
                                                     keyByteSequence);
   }
 
-  static ByteSequence
-  getRepeatingKeyXorEncryptedByteSequence(const ByteSequence &byteSequence,
-                                          const ByteSequence &keyByteSequence) {
+  static ByteSequence getRepeatingKeyXorEncryptedByteSequence(
+      const ByteSequence &byteSequence, const ByteSequence &keyByteSequence) {
     std::vector<char> encryptedBytes(byteSequence.getBytes());
     auto keyBytes = keyByteSequence.getBytes();
 
@@ -111,7 +170,7 @@ public:
     return encryptedByteSequence;
   }
 
-private:
+ private:
   static ByteSequence get16ByteAES128BitECBModeEncryptedByteSequence(
       const ByteSequence &byteSequence, const ByteSequence &keyByteSequence) {
     const size_t blockSize = 16;
@@ -160,4 +219,4 @@ private:
   }
 };
 
-#endif // __ENCRYPTOR_HPP__
+#endif  // __ENCRYPTOR_HPP__
