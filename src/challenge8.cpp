@@ -24,7 +24,9 @@ int main(int argc, char *argv[]) {
       auto subByteSequence2 = byteSequence.getSubSequence(i * 16, 16);
 
       auto normalizedHammingDistance =
-          (float)subByteSequence1.getHammingDistance(subByteSequence2) / 16.0f;
+          static_cast<float>(
+              subByteSequence1.getHammingDistance(subByteSequence2)) /
+          16.0f;
 
       averageHammingDistance += normalizedHammingDistance / blockCount;
     }

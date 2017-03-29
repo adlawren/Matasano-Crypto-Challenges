@@ -2,6 +2,7 @@
 #define __CRACKER_HPP__
 
 #include <algorithm>
+#include <cstring>
 #include <functional>
 #include <openssl/conf.h>
 #include <openssl/err.h>
@@ -10,12 +11,13 @@
 
 #include "BoundedBuffer.hpp"
 #include "ByteSequence.hpp"
-#include "CharacterFrequencyScoreCalculator.hpp"
+#include "EnglishCharacterDistributionScoreCalculator.hpp"
+
 #include "Encryptor.hpp"
 #include "Oracle.hpp"
 
 class Cracker {
-public:
+ public:
   static char getKeyFromSingleCharacterXorEncryptedByteSequence(
       const ByteSequence &encryptedByteSequence) {
     char key = 0;
@@ -29,9 +31,8 @@ public:
       auto xoredByteSequence = encryptedByteSequence.getXoredByteSequence(
           singleCharacterByteSequence);
 
-      auto score =
-          CharacterFrequencyScoreCalculator::calculateByteVectorFrequencyScore(
-              xoredByteSequence.getBytes());
+      auto score = EnglishCharacterDistributionScoreCalculator::
+          calculateByteSequenceMonogramFrequencyScore(xoredByteSequence);
       if (score > maxScore) {
         key = nextCharacter;
         maxScore = score;
@@ -63,7 +64,7 @@ public:
       }
 
       keySizeToNormalizedHammingDistanceMap[i] =
-          minimumHammingDistance / (float)blockCount;
+          minimumHammingDistance / static_cast<float>(blockCount);
     }
 
     std::vector<std::pair<int, float>>
@@ -78,9 +79,9 @@ public:
           return p1.second < p2.second;
         });
 
-    auto keySizeGuesses =
-        std::min((int)keySizeToNormalizedHammingDistanceMapPairs.size(),
-                 maxKeySizeGuessCount);
+    auto keySizeGuesses = std::min(
+        static_cast<int>(keySizeToNormalizedHammingDistanceMapPairs.size()),
+        maxKeySizeGuessCount);
 
     std::vector<int> keySizes(keySizeGuesses);
     for (auto i = 0; i < maxKeySizeGuessCount; ++i) {
@@ -132,9 +133,8 @@ public:
           Encryptor::getRepeatingKeyXorEncryptedByteSequence(
               encryptedByteSequence, key);
 
-      auto score =
-          CharacterFrequencyScoreCalculator::calculateByteVectorFrequencyScore(
-              decryptedByteSequence.getBytes());
+      auto score = EnglishCharacterDistributionScoreCalculator::
+          calculateByteSequenceMonogramFrequencyScore(decryptedByteSequence);
       if (score > bestScore) {
         bestScore = score;
         bestKeyByteSequence = key;
@@ -271,6 +271,94 @@ public:
 
     return decryptedMysteryPlaintext;
   }
+
+  static char getNextKeystreamByteFromFixedNonceStreamEncryptedByteSequences(
+      const std::vector<ByteSequence> &ciphertextByteSequences,
+      const ByteSequence &existingCrackedKeystreamByteSequence) {
+    // Validate ciphertext byte sequence lengths
+    for (auto ciphertextByteSequence : ciphertextByteSequences) {
+      assert(ciphertextByteSequence.getByteCount() ==
+             existingCrackedKeystreamByteSequence.getByteCount() + 1);
+    }
+
+    // Construct the ciphertext "column"
+    //  - i.e. the list of the last bytes from each ciphertext byte sequence
+    ByteSequence ciphertextColumnByteSequence;
+    for (auto ciphertextByteSequence : ciphertextByteSequences) {
+      ciphertextColumnByteSequence.appendAsciiBytes(
+          std::vector<char>{ciphertextByteSequence.getBytes().back()});
+    }
+
+    char key = 0;
+    float maxScore = 0.0;
+    for (auto nextCharacter = 0; nextCharacter < 256; ++nextCharacter) {
+      ByteSequence singleCharacterByteSequence;
+      singleCharacterByteSequence.initializeFromAsciiBytes(std::vector<char>(
+          ciphertextColumnByteSequence.getByteCount(), nextCharacter));
+
+      auto xoredByteSequence =
+          ciphertextColumnByteSequence.getXoredByteSequence(
+              singleCharacterByteSequence);
+
+      auto score = EnglishCharacterDistributionScoreCalculator::
+          calculateByteSequenceMonogramFrequencyScore(xoredByteSequence);
+
+      //// Score the cracked byte sequences that would be generated if this key
+      //// were used
+      ByteSequence updatedKeystreamByteSequence =
+          existingCrackedKeystreamByteSequence;
+      updatedKeystreamByteSequence.appendAsciiBytes(
+          std::vector<char>{static_cast<char>(nextCharacter)});
+
+      // Compute the cracked byte sequences that would be generated if this key
+      // were used
+      std::vector<ByteSequence> crackedPlaintextByteSequenceGuesses;
+      for (auto ciphertextByteSequence : ciphertextByteSequences) {
+        crackedPlaintextByteSequenceGuesses.push_back(
+            ciphertextByteSequence.getXoredByteSequence(
+                updatedKeystreamByteSequence));
+      }
+
+      // Score the monograms in the cracked byte sequences
+      for (auto ciphertextByteSequence : ciphertextByteSequences) {
+        score += EnglishCharacterDistributionScoreCalculator::
+            calculateByteSequenceMonogramFrequencyScore(
+                ciphertextByteSequence.getXoredByteSequence(
+                    updatedKeystreamByteSequence));
+      }
+
+      // Score the bigrams in the cracked byte sequences
+      float bigramScoreScalingFactor = 10.0f;
+      for (auto crackedPlaintextByteSequenceGuess :
+           crackedPlaintextByteSequenceGuesses) {
+        score += EnglishCharacterDistributionScoreCalculator::
+                     calculateByteSequenceBigramFrequencyScore(
+                         crackedPlaintextByteSequenceGuess) *
+                 bigramScoreScalingFactor;
+      }
+
+      // todo: remove? This ultimately didn't improve the effectiveness of the
+      // algorithm (atleast during challenge 19)
+      // Score the trigrams in the cracked byte sequences
+      /*
+      float trigramScoreScalingFactor = bigramScoreScalingFactor * 10.0f;
+      for (auto crackedPlaintextByteSequenceGuess :
+           crackedPlaintextByteSequenceGuesses) {
+        score += EnglishCharacterDistributionScoreCalculator::
+                     calculateByteSequenceTrigramFrequencyScore(
+                         crackedPlaintextByteSequenceGuess) *
+                 trigramScoreScalingFactor;
+      }
+      */
+
+      if (score > maxScore) {
+        key = nextCharacter;
+        maxScore = score;
+      }
+    }
+
+    return key;
+  }
 };
 
-#endif // __CRACKER_HPP__
+#endif  // __CRACKER_HPP__

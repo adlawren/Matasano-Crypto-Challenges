@@ -3,7 +3,7 @@
 #include <vector>
 
 #include "ByteSequence.hpp"
-#include "CharacterFrequencyScoreCalculator.hpp"
+#include "EnglishCharacterDistributionScoreCalculator.hpp"
 #include "Cracker.hpp"
 
 int main(int argc, char *argv[]) {
@@ -29,7 +29,7 @@ int main(int argc, char *argv[]) {
         nextByteSequence.getXoredByteSequence(keyByteSequence);
 
     auto plainTextScore =
-        CharacterFrequencyScoreCalculator::calculateByteVectorFrequencyScore(
+        EnglishCharacterDistributionScoreCalculator::calculateByteSequenceMonogramFrequencyScore(
             nextPlaintextByteSequence.getBytes());
     if (plainTextScore > maxScore) {
       bestPlaintextByteSequence = nextPlaintextByteSequence;

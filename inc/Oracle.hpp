@@ -113,7 +113,7 @@ class Oracle {
   static unsigned getCiphertextBlockSize(
       const ByteSequence &ciphertextByteSequence, unsigned maxKeySizeGuess) {
     std::map<unsigned, float> keySizeToNormalizedHammingDistanceMap;
-    for (int i = 2; i < (int)maxKeySizeGuess; ++i) {
+    for (int i = 2; i < static_cast<int>(maxKeySizeGuess); ++i) {
       auto blockCount = std::div(ciphertextByteSequence.getByteCount(), i).quot;
 
       auto minimumHammingDistance = 0.0f;
@@ -131,7 +131,7 @@ class Oracle {
       }
 
       keySizeToNormalizedHammingDistanceMap[i] =
-          minimumHammingDistance / (float)blockCount;
+          minimumHammingDistance / static_cast<float>(blockCount);
     }
 
     std::vector<std::pair<int, float>>
@@ -227,7 +227,7 @@ class Oracle {
 
     for (unsigned i = 0; i < hypothesizedPaddingAmount; ++i) {
       if (byteSequence.getBytes()[byteSequence.getByteCount() - 1 - i] !=
-          (char)hypothesizedPaddingAmount) {
+          static_cast<char>(hypothesizedPaddingAmount)) {
         throw std::runtime_error("Invalid PKCS padding");
       }
     }
@@ -256,7 +256,8 @@ class Oracle {
           byteSequence.getSubSequence(i * blockSize, blockSize);
 
       auto normalizedHammingDistance =
-          (float)subByteSequence1.getHammingDistance(subByteSequence2) /
+          static_cast<float>(
+              subByteSequence1.getHammingDistance(subByteSequence2)) /
           float(blockSize);
 
       averageHammingDistance += normalizedHammingDistance / float(blockCount);

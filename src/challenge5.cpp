@@ -3,7 +3,7 @@
 #include <vector>
 
 #include "ByteSequence.hpp"
-#include "CharacterFrequencyScoreCalculator.hpp"
+#include "EnglishCharacterDistributionScoreCalculator.hpp"
 #include "Encryptor.hpp"
 
 int main(int argc, char *argv[]) {

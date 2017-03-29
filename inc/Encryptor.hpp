@@ -58,10 +58,14 @@ class Encryptor {
     unsigned blockCount =
         (plaintextByteSequence.getByteCount() / blockSize) + 1;
     for (unsigned blockIndex = 0; blockIndex < blockCount; ++blockIndex) {
-      ByteSequence nextPlaintextBlockByteSequence;
-
       unsigned remainingByteCount =
           plaintextByteSequence.getByteCount() - (blockIndex * blockSize);
+
+      // TODO: Maybe find a cleaner way of doing this
+      if (remainingByteCount == 0)
+        break;
+
+      ByteSequence nextPlaintextBlockByteSequence;
       if (remainingByteCount >= blockSize) {
         nextPlaintextBlockByteSequence = plaintextByteSequence.getSubSequence(
             blockIndex * blockSize, blockSize);
@@ -92,7 +96,8 @@ class Encryptor {
              nextCiphertextKeyStreamByte =
                  ciphertextKeyStreamByteSequence.getBytes()[byteIndex];
         ciphertextByteSequence.appendAsciiBytes(
-            std::vector<char>{nextPlaintextByte ^ nextCiphertextKeyStreamByte});
+            std::vector<char>{static_cast<char>(nextPlaintextByte ^
+                                                nextCiphertextKeyStreamByte)});
       }
 
       blockLittleEndian8ByteCounterByteSequence =

@@ -106,8 +106,9 @@ class Decryptor {
                  nextCiphertextBlockByteSequence.getBytes()[byteIndex],
              nextCiphertextKeyStreamByte =
                  ciphertextKeyStreamByteSequence.getBytes()[byteIndex];
-        plaintextByteSequence.appendAsciiBytes(std::vector<char>{
-            nextCiphertextByte ^ nextCiphertextKeyStreamByte});
+        plaintextByteSequence.appendAsciiBytes(
+            std::vector<char>{static_cast<char>(nextCiphertextByte ^
+                                                nextCiphertextKeyStreamByte)});
       }
 
       blockLittleEndian8ByteCounterByteSequence =

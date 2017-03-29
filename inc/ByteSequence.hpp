@@ -31,7 +31,7 @@ class ByteSequence {
       return std::vector<ByteSequence>{byteSequence};
     }
 
-    auto delimeterIndex = byteSequence.getByteIndex(delimeter);
+    int delimeterIndex = byteSequence.getByteIndex(delimeter);
     if (delimeterIndex < 0) {
       return std::vector<ByteSequence>{byteSequence};
     } else {
@@ -40,13 +40,16 @@ class ByteSequence {
       delimitedByteSequences.push_back(
           byteSequence.getSubSequence(0, delimeterIndex));
 
-      auto otherdelimitedByteSequences =
-          getSplitSingleByteDelimitedByteSequences(
-              byteSequence.getSubSequence(delimeterIndex + 1), delimeter);
+      if (static_cast<unsigned>(delimeterIndex + 1) <
+          byteSequence.getByteCount()) {
+        auto otherdelimitedByteSequences =
+            getSplitSingleByteDelimitedByteSequences(
+                byteSequence.getSubSequence(delimeterIndex + 1), delimeter);
 
-      delimitedByteSequences.insert(std::end(delimitedByteSequences),
-                                    std::begin(otherdelimitedByteSequences),
-                                    std::end(otherdelimitedByteSequences));
+        delimitedByteSequences.insert(std::end(delimitedByteSequences),
+                                      std::begin(otherdelimitedByteSequences),
+                                      std::end(otherdelimitedByteSequences));
+      }
 
       return delimitedByteSequences;
     }
@@ -127,6 +130,13 @@ class ByteSequence {
     return str;
   }
 
+  char getByteAtIndex(unsigned index) const {
+    auto byteVector = *_bytes.get();
+    assert(index < byteVector.size());
+
+    return byteVector[index];
+  }
+
   int getByteIndex(char byte) const {
     for (unsigned i = 0; i < _bytes.get()->size(); ++i) {
       if ((*_bytes.get())[i] == byte) {
@@ -165,6 +175,16 @@ class ByteSequence {
     return bitCount;
   }
 
+  ByteSequence getLowerCaseAsciiByteSequence() const {
+    ByteSequence lowerCaseByteSequence;
+    for (auto nextByte : *_bytes) {
+      lowerCaseByteSequence.appendAsciiBytes(
+          std::vector<char>{convertAsciiByteToLowerCaseAsciiByte(nextByte)});
+    }
+
+    return lowerCaseByteSequence;
+  }
+
   ByteSequence getPaddedByteSequence(unsigned blockByteSize) const {
     ByteSequence paddedByteSequence;
     paddedByteSequence.initializeFromAsciiBytes(*_bytes.get());
@@ -201,14 +221,13 @@ class ByteSequence {
     return xoredByteSequence;
   }
 
-  void printAsciiString() const {
-    printVector<char>(*_bytes.get());
-  }
+  bool isAlphabeticAsciiByteSequence() const {
+    for (char byte : *_bytes) {
+      if (!isAlphabeticAsciiByte(byte))
+        return false;
+    }
 
-  void printBase64EncodedString() const {
-    auto base64EncodedBytes = getBase64EncodedAsciiBytes(*_bytes.get());
-
-    printVector<char>(base64EncodedBytes);
+    return true;
   }
 
   ByteSequence &operator=(const ByteSequence &byteSequence) {
@@ -247,6 +266,16 @@ class ByteSequence {
     }
 
     return false;
+  }
+
+  void printAsciiString() const {
+    printVector<char>(*_bytes.get());
+  }
+
+  void printBase64EncodedString() const {
+    auto base64EncodedBytes = getBase64EncodedAsciiBytes(*_bytes.get());
+
+    printVector<char>(base64EncodedBytes);
   }
 
   void printHexEncodedAsciiString() const {
@@ -310,6 +339,14 @@ class ByteSequence {
     return ascii;
   }
 
+  static char convertAsciiByteToLowerCaseAsciiByte(char ascii) {
+    if (ascii >= 'A' && ascii <= 'Z') {
+      return ascii - 'A' + 'a';
+    }
+
+    return ascii;
+  }
+
   static char convertBase64ByteToAsciiByte(char base64) {
     if (base64 >= 0 && base64 < 26) {
       return base64 + 'A';
@@ -341,6 +378,15 @@ class ByteSequence {
     }
 
     return hex;
+  }
+
+  static bool isAlphabeticAsciiByte(char ascii) {
+    if (ascii >= 'a' && ascii <= 'z')
+      return true;
+    if (ascii >= 'A' && ascii <= 'Z')
+      return true;
+
+    return false;
   }
 
   static std::vector<char> getBase64EncodedAsciiBytes(
