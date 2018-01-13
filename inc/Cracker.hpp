@@ -144,6 +144,29 @@ class Cracker {
     return bestKeyByteSequence;
   }
 
+  static ByteSequence getSizedKeyFromRepeatingKeyXorEncryptedByteSequence(
+      const ByteSequence &encryptedByteSequence, unsigned keySize) {
+    std::vector<ByteSequence> ciphertextColumnByteSequences(keySize);
+    for (unsigned i = 0; i < encryptedByteSequence.getByteCount();
+         i += keySize) {
+      auto subSequence = encryptedByteSequence.getSubSequence(i, i + keySize);
+      for (unsigned j = 0; j < keySize; ++j) {
+        ciphertextColumnByteSequences[j].appendAsciiBytes(
+            std::vector<char>{subSequence.getBytes()[j]});
+      }
+    }
+
+    // Crack the keystream bytes
+    ByteSequence crackedKeyStreamByteSequence;
+    for (auto ciphertextColumnByteSequence : ciphertextColumnByteSequences) {
+      char keyByte = getKeyFromSingleCharacterXorEncryptedByteSequence(
+          ciphertextColumnByteSequence);
+      crackedKeyStreamByteSequence.appendAsciiBytes(std::vector<char>{keyByte});
+    }
+
+    return crackedKeyStreamByteSequence;
+  }
+
   static ByteSequence getAES128BitECBModeEncryptedMysteryPlaintextByteSequence(
       std::function<ByteSequence(const ByteSequence &)> encryptionFunction) {
     static const char MAX_CHARACTER_GUESS = 127;
@@ -337,10 +360,7 @@ class Cracker {
                  bigramScoreScalingFactor;
       }
 
-      // todo: remove? This ultimately didn't improve the effectiveness of the
-      // algorithm (atleast during challenge 19)
       // Score the trigrams in the cracked byte sequences
-      /*
       float trigramScoreScalingFactor = bigramScoreScalingFactor * 10.0f;
       for (auto crackedPlaintextByteSequenceGuess :
            crackedPlaintextByteSequenceGuesses) {
@@ -349,7 +369,6 @@ class Cracker {
                          crackedPlaintextByteSequenceGuess) *
                  trigramScoreScalingFactor;
       }
-      */
 
       if (score > maxScore) {
         key = nextCharacter;

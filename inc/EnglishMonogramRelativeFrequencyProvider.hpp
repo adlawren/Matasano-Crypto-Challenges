@@ -2,6 +2,7 @@
 #define __ENGLISH_MONOGRAM_RELATIVE_FREQUENCY_PROVIDER_HPP__
 
 #include <map>
+#include <utility>
 
 #include "ByteSequence.hpp"
 
@@ -12,6 +13,22 @@ class EnglishMonogramRelativeFrequencyProvider {
   static EnglishMonogramRelativeFrequencyProvider& getInstance() {
     static EnglishMonogramRelativeFrequencyProvider instance;
     return instance;
+  }
+
+  std::map<ByteSequence, float>
+  getEmptyMonogramByteSequenceRelativeFrequencyMap() const {
+    std::map<ByteSequence, float> emptyMonogramByteSequenceRelativeFrequencyMap;
+    for (const std::pair<const char, float>& entry :
+         _monogramRelativeFrequencyMap) {
+      ByteSequence nextMonogramByteSequence;
+      nextMonogramByteSequence.initializeFromAsciiBytes(
+          std::vector<char>{entry.first});
+
+      emptyMonogramByteSequenceRelativeFrequencyMap[nextMonogramByteSequence] =
+          0.0f;
+    }
+
+    return emptyMonogramByteSequenceRelativeFrequencyMap;
   }
 
   // todo: replace all assertions in this project with exceptions

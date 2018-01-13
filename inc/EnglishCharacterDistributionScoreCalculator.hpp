@@ -18,7 +18,9 @@ class EnglishCharacterDistributionScoreCalculator {
         static_cast<float>(getAlphabeticCharacterCount(byteSequence));
     float totalCharacterCount = static_cast<float>(byteSequence.getByteCount());
 
-    std::map<ByteSequence, float> monogramRelativeFrequencyMap;
+    std::map<ByteSequence, float> monogramRelativeFrequencyMap =
+        EnglishMonogramRelativeFrequencyProvider::getInstance()
+            .getEmptyMonogramByteSequenceRelativeFrequencyMap();
 
     ByteSequence lowerCaseAsciiByteSequence =
         byteSequence.getLowerCaseAsciiByteSequence();

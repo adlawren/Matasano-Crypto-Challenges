@@ -7,7 +7,7 @@
 
 static const unsigned BLOCK_SIZE = 16;
 
-static const unsigned MINIMUM_COLUMN_SIZE = 5;  // Note: this is a guess
+static const unsigned MINIMUM_COLUMN_SIZE = 10;  // Note: this is a guess
 
 static ByteSequence randomGlobalKeyByteSequence;
 
@@ -24,23 +24,19 @@ static ByteSequence randomGlobalKeyByteSequence;
 
   Augmenting the column-cracking process by incorporating scoring algorithms
   which look for common bigrams and trigrams helped somewhat. Ciphertext columns
-  of length 5 or greater are cracked using the single-character-xor cracking
-  algorithm exclusively. When cracking the columns shorter than 5 characters,
+  of length 10 or greater are cracked using the single-character-xor cracking
+  algorithm exclusively. When cracking the columns shorter than 10 characters,
   scores from bigrams and trigrams (update: currently just using bigram scores;
   see Cracker.hpp) are incorporated when found during the evaluation of
   keystream guesses.
 
-  The longest ciphertext columns shorter that 5 characters (3 characters in
-  lenghth) were sucessfully cracked using this approach (note that it could not
+  The longest ciphertext column shorter that 10 characters (6 characters in
+  lenghth) was sucessfully cracked using this approach (note that it could not
   be successfully cracked using the single-character-xor cracking algorithm,
-  applied to columns of length 5 or greater, successfully). However the smaller
-  ciphertext columns (of length 2 and smaller) could not be cracked using the
-  same code.
-
-  Some analysis shows, at least for a column of length 2, that the
-  incorrect yet chosen keystream guess does indeed yeild a greater cumulative
-  score when analyzing bigrams & trigrams. It is uncertain whether columns of
-  this length can be sustainably cracked.
+  applied to columns of length 10 or greater, successfully). However the smaller
+  ciphertext columns (of length 3 and smaller) could not be cracked using the
+  same code (note that one of the columns of length 3 could be decrypted, but
+  that success was considered to be a fluke).
 */
 
 int main(int argc, char* argv[]) {
