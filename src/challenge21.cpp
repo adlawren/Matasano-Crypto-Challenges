@@ -5,21 +5,16 @@
 static const unsigned MAX_TEST_SEED = 100;
 static const unsigned SEED_VERIFICATION_PERIOD = 100;
 
-// todo
-// (and) todo: mention MT19937 somewhere...
-class MersenneTwisterRandomNumberGenerator {
+class MT19937RandomNumberGenerator {
  public:
-  MersenneTwisterRandomNumberGenerator(unsigned seed) : k_(0) {
+  MT19937RandomNumberGenerator(unsigned seed) : k_(0) {
     largestWord_ = getLargestWord();
-
     upperBitsBitmask_ = getUpperBitmask(largestWord_);
-
     lowerBitsBitmask_ = getLowerBitmask(largestWord_);
 
     initializeSeries(static_cast<uint32_t>(seed));
   }
 
-  // todo
   unsigned getNextRandomNumber() {
     uint32_t tmp = 0;
 
@@ -57,7 +52,7 @@ class MersenneTwisterRandomNumberGenerator {
   static const uint32_t W = 32, N = 624, M = 397, R = 31;
   static const uint32_t A = 0x9908B0DF;
   static const uint32_t U = 11, D = 0xFFFFFFFF;
-  static const uint32_t S = 17, B = 0x9D2C5680;
+  static const uint32_t S = 7, B = 0x9D2C5680;
   static const uint32_t T = 15, C = 0xEFC60000;
   static const uint32_t L = 18;
   static const uint32_t F = 1812433253;
@@ -101,13 +96,10 @@ class MersenneTwisterRandomNumberGenerator {
     return lowerBitsBitmask;
   }
 
-  // todo: fix this initialization process, I think something is wrong...
   void initializeSeries(uint32_t seed) {
     xSeries_.push_back(seed);
-
     for (unsigned i = 1; i < N; ++i) {
       uint32_t tmp = xSeries_[i - 1] ^ (xSeries_[i - 1] >> (W - 2));
-      // xSeries_.push_back(F * tmp + i);
       xSeries_.push_back(F * tmp + i);
     }
   }
@@ -117,7 +109,7 @@ int main() {
   // test code
   for (unsigned next_seed = 0; next_seed < MAX_TEST_SEED; ++next_seed) {
     std::mt19937 mt(next_seed);
-    MersenneTwisterRandomNumberGenerator mtrng(next_seed);
+    MT19937RandomNumberGenerator mtrng(next_seed);
     for (unsigned i = 0; i < SEED_VERIFICATION_PERIOD; ++i) {
       unsigned next_expected_random_number = mt(),
                next_random_number = mtrng.getNextRandomNumber();
