@@ -7,7 +7,7 @@ LDIR =../lib
 
 LIBS=-lm -lssl -lcrypto
 
-_DEPS = BoundedBuffer.hpp ByteSequence.hpp EnglishCharacterDistributionScoreCalculator.hpp Cracker.hpp debug.hpp Decryptor.hpp Encryptor.hpp LittleEndian8ByteCounterByteSequence.hpp Oracle.hpp EnglishMonogramRelativeFrequencyProvider.hpp EnglishBigramRelativeFrequencyProvider.hpp EnglishTrigramRelativeFrequencyProvider.hpp
+_DEPS = BoundedBuffer.hpp ByteSequence.hpp Cracker.hpp debug.hpp Decryptor.hpp Encryptor.hpp EnglishBigramRelativeFrequencyProvider.hpp EnglishCharacterDistributionScoreCalculator.hpp EnglishMonogramRelativeFrequencyProvider.hpp EnglishTrigramRelativeFrequencyProvider.hpp LittleEndian8ByteCounterByteSequence.hpp MT19937Cloner.hpp MT19937RandomNumberGenerator.hpp Oracle.hpp
 DEPS = $(patsubst %, $(IDIR)/%, $(_DEPS))
 
 $(ODIR)/%.o: src/%.cpp $(DEPS)
@@ -79,6 +79,9 @@ CHALLENGE_21_OBJ = $(patsubst %, $(ODIR)/%, $(_CHALLENGE_21_OBJ))
 _CHALLENGE_22_OBJ = challenge22.o
 CHALLENGE_22_OBJ = $(patsubst %, $(ODIR)/%, $(_CHALLENGE_22_OBJ))
 
+_CHALLENGE_23_OBJ = challenge23.o
+CHALLENGE_23_OBJ = $(patsubst %, $(ODIR)/%, $(_CHALLENGE_23_OBJ))
+
 all: challenge1 challenge2 challenge3 challenge4 challenge5 challenge6 challenge7 challenge8 challenge9 challenge10 challenge11 challenge12 challenge13 challenge14 challenge15 challenge16 challenge17 challenge18 challenge19 challenge20 challenge21 challenge22
 
 challenge1: $(CHALLENGE_1_OBJ)
@@ -145,6 +148,9 @@ challenge21: $(CHALLENGE_21_OBJ)
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 challenge22: $(CHALLENGE_22_OBJ)
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+challenge23: $(CHALLENGE_23_OBJ)
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 .PHONY: clean

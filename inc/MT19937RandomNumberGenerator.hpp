@@ -1,3 +1,9 @@
+#ifndef __MT19937_RANDOM_NUMBER_GENERATOR_HPP__
+#define __MT19937_RANDOM_NUMBER_GENERATOR_HPP__
+
+#include <cstdint>
+#include <vector>
+
 class MT19937RandomNumberGenerator {
  public:
   MT19937RandomNumberGenerator(unsigned seed) : k_(0) {
@@ -6,6 +12,13 @@ class MT19937RandomNumberGenerator {
     lowerBitsBitmask_ = getLowerBitmask(largestWord_);
 
     initializeSeries(static_cast<uint32_t>(seed));
+  }
+
+  MT19937RandomNumberGenerator(const std::vector<unsigned>& stateArray)
+      : k_(0), xSeries_(stateArray) {
+    largestWord_ = getLargestWord();
+    upperBitsBitmask_ = getUpperBitmask(largestWord_);
+    lowerBitsBitmask_ = getLowerBitmask(largestWord_);
   }
 
   unsigned getNextRandomNumber() {
@@ -96,4 +109,9 @@ class MT19937RandomNumberGenerator {
       xSeries_.push_back(F * tmp + i);
     }
   }
+
+  friend class MT19937Cloner;  // Declared friend in order to access the static
+                               // constants
 };
+
+#endif  // __MT19937_RANDOM_NUMBER_GENERATOR_HPP__
