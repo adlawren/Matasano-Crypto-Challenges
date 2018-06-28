@@ -1,13 +1,13 @@
 #ifndef __CRACKER_HPP__
 #define __CRACKER_HPP__
 
-#include <algorithm>
-#include <cstring>
-#include <functional>
 #include <openssl/conf.h>
 #include <openssl/err.h>
 #include <openssl/evp.h>
 #include <openssl/ssl.h>
+#include <algorithm>
+#include <cstring>
+#include <functional>
 
 #include "BoundedBuffer.hpp"
 #include "ByteSequence.hpp"
@@ -18,6 +18,20 @@
 
 class Cracker {
  public:
+  static uint16_t get16BitSeedFromMT19937CiphertextByteSequence(
+      const ByteSequence &ciphertextByteSequence,
+      const ByteSequence &cribByteSequence) {
+    unsigned maxSeed = std::numeric_limits<char16_t>::max();
+    for (unsigned nextSeed = 0; nextSeed < maxSeed; ++nextSeed) {
+      auto decryptedByteSequence = Encryptor::getMT19937EncryptedByteSequence(
+          ciphertextByteSequence, nextSeed);
+      if (decryptedByteSequence.containsSubSequence(cribByteSequence))
+        return nextSeed;
+    }
+
+    throw std::runtime_error("Error: could not crack MT19937 seed");
+  }
+
   static char getKeyFromSingleCharacterXorEncryptedByteSequence(
       const ByteSequence &encryptedByteSequence) {
     char key = 0;
@@ -377,6 +391,23 @@ class Cracker {
     }
 
     return key;
+  }
+
+  static bool isMT19937GeneratedPasswordTokenByteSequence(
+      const ByteSequence &passwordTokenByteSequence) {
+    const unsigned GUESS_COUNT = 100000;
+
+    unsigned nextSeedGuess = time(0);
+    for (unsigned i = 0; i < GUESS_COUNT; ++i) {
+      ByteSequence passwordTokenByteSequenceGuess =
+          Encryptor::getMT19937GeneratedPasswordTokenByteSequence(
+              nextSeedGuess);
+      if (passwordTokenByteSequence == passwordTokenByteSequenceGuess)
+        return true;
+      --nextSeedGuess;
+    }
+
+    return false;
   }
 };
 

@@ -8,6 +8,7 @@
 
 #include "ByteSequence.hpp"
 #include "LittleEndian8ByteCounterByteSequence.hpp"
+#include "MT19937RandomNumberGenerator.hpp"
 
 class Encryptor {
  public:
@@ -158,6 +159,32 @@ class Encryptor {
 
     return getAES128BitECBModeEncryptedByteSequence(joinedPlaintextByteSequence,
                                                     keyByteSequence);
+  }
+
+  static ByteSequence getMT19937EncryptedByteSequence(
+      const ByteSequence &plaintextByteSequence, uint32_t seed) {
+    // TODO: Extract 4 bytes from each rng output instead of generating a new
+    // number for each byte of plaintext?
+    MT19937RandomNumberGenerator rng(seed);
+    ByteSequence keystreamByteSequence;
+    for (unsigned i = 0; i < plaintextByteSequence.getByteCount(); ++i) {
+      keystreamByteSequence.appendAsciiBytes(
+          std::vector<char>{static_cast<char>(rng.getNextRandomNumber())});
+    }
+
+    return plaintextByteSequence.getXoredByteSequence(keystreamByteSequence);
+  }
+
+  static ByteSequence getMT19937GeneratedPasswordTokenByteSequence(
+      unsigned seed, unsigned byteCount = 64) {
+    ByteSequence passwordTokenByteSequence;
+    MT19937RandomNumberGenerator rng(seed);
+    for (unsigned i = 0; i < byteCount; ++i) {
+      passwordTokenByteSequence.appendAsciiBytes(
+          std::vector<char>{static_cast<char>(rng.getNextRandomNumber())});
+    }
+
+    return passwordTokenByteSequence;
   }
 
   static ByteSequence getRepeatingKeyXorEncryptedByteSequence(

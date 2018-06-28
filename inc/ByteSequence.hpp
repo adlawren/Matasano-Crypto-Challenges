@@ -110,6 +110,27 @@ class ByteSequence {
                          std::end(decodedBytes));
   }
 
+  bool containsSubSequence(const ByteSequence &subSequence) const {
+    assert(subSequence.getByteCount() <= _bytes.get()->size());
+
+    auto byteVector = *_bytes.get();
+    auto subSequenceBytes = subSequence.getBytes();
+
+    unsigned nextMatchedByteIndex = 0;
+    for (unsigned i = 0; i < byteVector.size(); ++i) {
+      if (byteVector[i] == subSequenceBytes[nextMatchedByteIndex]) {
+        ++nextMatchedByteIndex;
+        if (nextMatchedByteIndex == subSequence.getByteCount()) {
+          return true;
+        }
+      } else {
+        nextMatchedByteIndex = 0;
+      }
+    }
+
+    return false;
+  }
+
   void initializeFromAsciiBytes(const std::vector<char> &bytes) {
     _bytes.reset(new std::vector<char>(bytes));
   }
