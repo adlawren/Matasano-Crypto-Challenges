@@ -131,6 +131,17 @@ class ByteSequence {
     return false;
   }
 
+  void editSubSequence(unsigned startIndex,
+                       const ByteSequence &newSubSequence) {
+    assert(startIndex + newSubSequence.getByteCount() <= getByteCount());
+
+    auto newBytes = newSubSequence.getBytes();
+    for (unsigned offset = 0; offset < newSubSequence.getByteCount();
+         ++offset) {
+      setByteAtIndex(startIndex + offset, newBytes[offset]);
+    }
+  }
+
   void initializeFromAsciiBytes(const std::vector<char> &bytes) {
     _bytes.reset(new std::vector<char>(bytes));
   }

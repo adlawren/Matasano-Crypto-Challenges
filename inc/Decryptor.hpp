@@ -70,8 +70,11 @@ class Decryptor {
 
     nonceByteSequence.initializeFromAsciiBytes(std::vector<char>(8, 0));
 
-    unsigned blockCount =
-        (ciphertextByteSequence.getByteCount() / blockSize) + 1;
+    unsigned blockCount = ciphertextByteSequence.getByteCount() / blockSize;
+    if (ciphertextByteSequence.getByteCount() % blockSize != 0) {
+      blockCount += 1;
+    }
+
     for (unsigned blockIndex = 0; blockIndex < blockCount; ++blockIndex) {
       ByteSequence nextCiphertextBlockByteSequence;
 
