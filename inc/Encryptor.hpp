@@ -226,18 +226,17 @@ class Encryptor {
 
     std::basic_string<unsigned char> ciphertextString;
 
-    EVP_CIPHER_CTX ctx;
-    EVP_CIPHER_CTX_init(&ctx);
-    EVP_EncryptInit_ex(&ctx, EVP_aes_128_ecb(), NULL, keyString.c_str(), NULL);
-    EVP_CIPHER_CTX_set_padding(&ctx, false);
+    EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
+    EVP_EncryptInit_ex(ctx, EVP_aes_128_ecb(), NULL, keyString.c_str(), NULL);
+    EVP_CIPHER_CTX_set_padding(ctx, false);
 
     unsigned char buffer[1024], *pointer = buffer;
     int outlen;
-    EVP_EncryptUpdate(&ctx, pointer, &outlen, textString.c_str(),
+    EVP_EncryptUpdate(ctx, pointer, &outlen, textString.c_str(),
                       textString.length());
 
     pointer += outlen;
-    EVP_EncryptFinal_ex(&ctx, pointer, &outlen);
+    EVP_EncryptFinal_ex(ctx, pointer, &outlen);
 
     pointer += outlen;
     ciphertextString =
