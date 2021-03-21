@@ -1,11 +1,11 @@
-IDIR =inc
-CC=g++
-CFLAGS=-g -std=c++0x -Wall -I$(IDIR)
+IDIR = inc
+CC = g++
+CFLAGS = -g -std=c++0x -Wall -I$(IDIR)
 
-ODIR=obj
-LDIR =../lib
+ODIR = obj
+LDIR = ../lib
 
-LIBS=-lm -lssl -lcrypto
+LIBS = -lm -lssl -lcrypto
 
 _DEPS = BoundedBuffer.hpp ByteSequence.hpp Cracker.hpp debug.hpp Decryptor.hpp Encryptor.hpp EnglishBigramRelativeFrequencyProvider.hpp EnglishCharacterDistributionScoreCalculator.hpp EnglishMonogramRelativeFrequencyProvider.hpp EnglishTrigramRelativeFrequencyProvider.hpp LittleEndian8ByteCounterByteSequence.hpp MT19937Cloner.hpp MT19937RandomNumberGenerator.hpp Oracle.hpp
 DEPS = $(patsubst %, $(IDIR)/%, $(_DEPS))

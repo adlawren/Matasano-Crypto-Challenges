@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+clang-format -i ./inc/*
+clang-format -i ./src/*
+clang-format -i ./test/*

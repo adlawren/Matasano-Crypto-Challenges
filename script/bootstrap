@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+ARCH_RELEASE_FILE=/etc/arch-release
+if [[ -e $ARCH_RELEASE_FILE ]]
+then
+    declare -a dependencies=("clang")
+
+    for package in "${dependencies[@]}"
+    do
+        sudo pacman -S $package
+    done
+
+    declare -a aur_dependencies=("googletest-git")
+
+    for package in "${aur_dependencies[@]}"
+    do
+        git clone "https://aur.archlinux.org/$package.git" /tmp/$package
+        $(cd /tmp/$package; makepkg -si)
+    done
+
+    exit 0
+fi
+
+echo "Error: Unsupported operating system"
