@@ -4,6 +4,7 @@ class CryptECB
   def initialize(key: SecureRandom.random_bytes(16))
     @key = key
   end
+
   def encrypt(plaintext)
     cipher = OpenSSL::Cipher.new('AES-128-ECB')
     cipher.encrypt
