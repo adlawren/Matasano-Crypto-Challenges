@@ -15,44 +15,6 @@ end
 
 c = CryptECB.new(key: key)
 
-def prepended_size(&block)
-  # Note: this will only be accurate if there is NO appended text
-  appended_size(&block)
-end
-
-def common_prefix_size(s1, s2)
-  s2.each_char.take_while.with_index do |char, idx|
-    s1[idx] == char
-  end.size
-end
-
-def ecb_prepended_size(&block)
-  block_size = find_block_size(&block)
-  prev_ct = yield('a')
-  prev_common_prefix_size = common_prefix_size(yield(''), prev_ct)
-  size = (2..).find do |size|
-    ct = yield('a' * size)
-    common_prefix_size = common_prefix_size(prev_ct, ct)
-    if common_prefix_size >= prev_common_prefix_size + block_size
-      true
-    else
-      prev_ct = ct
-      prev_common_prefix_size = common_prefix_size
-      false
-    end
-  end
-  (prev_common_prefix_size + block_size) - (size - 1)
-end
-
-def ecb_appended_size(&block)
-  prepended_size = ecb_prepended_size(&block)
-
-  # appended_size will return prepended_size + appended_size;
-  # it only returns the appended_size if the prepended_size is 0,
-  # otherwise it returns the sum of the two
-  appended_size(&block) - prepended_size
-end
-
 block_size = find_block_size do |pt|
   ecb_append_unknown2(prefix, pt, unknown, key)
 end
