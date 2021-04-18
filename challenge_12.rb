@@ -13,22 +13,16 @@ end
 c = CryptECB.new(key: key)
 
 def find_block_size
-  prev_ct = yield('0')
-  a = (1..).find do |size|
-    ct = yield('0' * size)
-    ct.size > prev_ct.size
+  prev_size = yield('').size
+  size = (1..).find do |size|
+    yield('0' * size).size > prev_size
   end
 
-  prev_ct = yield('0' * a)
-  b = (a..).find do |size|
-    ct = yield('0' * size)
-    ct.size > prev_ct.size
-  end
-
-  b - a
+  yield('0' * size).size - prev_size
 end
 
 def appended_size(&block)
+  # Note: this will only be accurate if there is NO prepended text
   prev_size = yield('').size
   size = (1..).find do |size|
     yield('0' * size).size > prev_size
@@ -49,7 +43,6 @@ p "Is ECB-encrypted: #{is_ecb?(ct)}"
 def crack_ecb_appended(&block)
   block_size = find_block_size(&block)
   cracked = ''
-  appended_size = appended_size(&block)
   block_count = yield('').size / block_size
   (1...block_count).each do |block_number|
     (0..15).reverse_each do |size|

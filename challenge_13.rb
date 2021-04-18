@@ -19,15 +19,6 @@ class Profile
   end
 end
 
-def prepended_size(&block)
-  block_size = find_block_size(&block)
-  prev_size = yield('').size
-  size = (1..).find do |size|
-    yield('0' * size).size > prev_size
-  end
-  block_size - size - 1
-end
-
 key = SecureRandom.random_bytes(16)
 
 encode_proc = Proc.new do |pt|
@@ -35,8 +26,12 @@ encode_proc = Proc.new do |pt|
 end
 
 block_size = find_block_size(&encode_proc)
-prepended_size = prepended_size(&encode_proc)
-appended_size = appended_size(&encode_proc)
+
+# TODO: see if there's a way to do this without making these assumptions
+prepended_size = 6
+appended_size = 17
+
+wrapper_text_size = prepended_size + appended_size
 
 # Make and concatenate the following encrypted blocks:
 # 'email=abc@gmail.'
@@ -46,13 +41,13 @@ appended_size = appended_size(&encode_proc)
 
 email = encode_proc.call('a' * (block_size - prepended_size)).slice(0, block_size)
 
-role_equals = encode_proc.call('a' * (block_size - (appended_size % block_size) + 'user'.size))
+role_equals = encode_proc.call('a' * (block_size - (wrapper_text_size % block_size) + 'user'.size))
 role_equals = role_equals.slice(role_equals.size - block_size * 2, block_size)
 
 bumper_text = 'a' * (block_size - prepended_size)
 admin = encode_proc.call(bumper_text + 'admin').slice(prepended_size + bumper_text.size, block_size)
 
-equals_user = encode_proc.call('a' * (block_size - (appended_size % block_size) + '=user'.size))
+equals_user = encode_proc.call('a' * (block_size - (wrapper_text_size % block_size) + '=user'.size))
 equals_user = equals_user.slice(equals_user.size - block_size, block_size)
 
 encoded_admin_profile = email + role_equals + admin + equals_user
