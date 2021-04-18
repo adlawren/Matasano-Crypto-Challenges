@@ -4,18 +4,18 @@ def add_padding(text, block_size = 16)
 end
 
 def valid_padding?(text)
-  padding_value = text[-1].bytes.first
-  text.bytes.last(padding_value).any? do |padding_byte|
-    padding_byte != padding_value
+  padding_value = text.bytes.last
+  text.bytes.last(padding_value).all? do |padding_byte|
+    padding_byte == padding_value
   end
 end
 
 def remove_padding(text)
-  if valid_padding?(text)
+  unless valid_padding?(text)
     raise 'Invalid padding'
   end
-  padding_value = text[-1].bytes.first
-  text[0...text.size - padding_value]
+  padding_size = text.bytes.last
+  text.slice(0, text.size - padding_size)
 end
 
 p add_padding('YELLOW SUBMARINE', 20)
