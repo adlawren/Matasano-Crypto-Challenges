@@ -5,6 +5,9 @@ end
 
 def valid_padding?(text)
   padding_value = text.bytes.last
+
+  return false if padding_value == 0
+
   text.bytes.last(padding_value).all? do |padding_byte|
     padding_byte == padding_value
   end
