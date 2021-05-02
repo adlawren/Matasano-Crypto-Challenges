@@ -1,7 +1,7 @@
 require 'pry-byebug'
 
 class MT19937
-  def initialize(seed = Time.now.to_i)
+  def initialize(seed: Time.now.to_i, x: nil)
     @w = 32
     @n = 624
     @m = 397
@@ -23,18 +23,26 @@ class MT19937
     @upper_bitmask = (@max_word << @r) & @max_word
     @k = 0
 
-    @x = [seed]
-    (@n - 1).times do |index|
-      i = index + 1
+    if !x.nil?
+      if x.size != @n
+        raise "The provided state array is not the right size (#{x.size} vs. #{@n} (expected))"
+      else
+        @x = x
+      end
+    else
+      @x = [seed]
+      (@n - 1).times do |index|
+        i = index + 1
 
-      # These intermediate values may also be larger than the max_word,
-      # so they need to be and-ed w/ max_word
-      tmp = @f * (@x[i - 1] ^ (@x[i - 1] >> (@w - 2)))
-      tmp &= @max_word
-      tmp += i
-      tmp &= @max_word
+        # These intermediate values may also be larger than the max_word,
+        # so they need to be and-ed w/ max_word
+        tmp = @f * (@x[i - 1] ^ (@x[i - 1] >> (@w - 2)))
+        tmp &= @max_word
+        tmp += i
+        tmp &= @max_word
 
-      @x.push(tmp)
+        @x.push(tmp)
+      end
     end
   end
 
@@ -62,7 +70,7 @@ class MT19937
 end
 
 (0..10).each do |seed|
-  mt19937 = MT19937.new(seed)
+  mt19937 = MT19937.new(seed: seed)
   r = Random.new(seed)
   1000.times do |iteration|
     rand = mt19937.rand
