@@ -8,8 +8,9 @@ rand = mt.rand
 sleep(15)
 
 cracked_seed = nil
+current_time_seconds = Time.now.to_i
 30.times do |index|
-  seed = Time.now.to_i - index
+  seed = current_time_seconds - index
   mt2 = MT19937.new(seed: seed)
   if mt2.rand == rand
     cracked_seed = seed
