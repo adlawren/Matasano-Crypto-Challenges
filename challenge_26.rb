@@ -8,7 +8,7 @@ require 'pry-byebug'
 
 crypt = CryptCTR.new
 
-def profile_for(crypt: crypt, user_data: user_data)
+def profile_for(crypt:, user_data:)
   hash = {
     comment1: 'cooking%20MCs',
     userdata: user_data,
