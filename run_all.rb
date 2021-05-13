@@ -1,4 +1,3 @@
-(1..27).each do |v|
-  # Omit challenges which take a long time
-  load "challenge_#{v}.rb" unless [4,6,17,20,22,24].include?(v)
+(1..29).each do |v|
+  load "challenge_#{v}.rb" unless [4,6,17,20,22,24,28].include?(v) # Omit challenges which take a long time
 end
