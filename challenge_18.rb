@@ -1,4 +1,8 @@
+require 'openssl'
 require 'pry-byebug'
+
+require_relative 'challenge_1.rb'
+require_relative 'challenge_2.rb'
 
 class CryptCTR
   def initialize(key: SecureRandom.random_bytes(16), nonce: SecureRandom.random_bytes(8))

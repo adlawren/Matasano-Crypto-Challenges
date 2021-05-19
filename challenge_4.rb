@@ -1,5 +1,8 @@
 require 'pry-byebug'
 
+require_relative 'challenge_1.rb'
+require_relative 'challenge_3.rb'
+
 ciphertexts = File.readlines('4.txt')
 
 ciphertext = ciphertexts.map(&:strip).map do |ciphertext|

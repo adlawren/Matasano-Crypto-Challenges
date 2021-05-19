@@ -1,4 +1,7 @@
 require 'pry-byebug'
+require 'securerandom'
+
+require_relative 'challenge_10.rb'
 
 key = SecureRandom.random_bytes(16)
 crypt = CryptCBC.new(key: key, iv: key)

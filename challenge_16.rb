@@ -1,5 +1,8 @@
 require 'pry-byebug'
 
+require_relative 'challenge_7.rb'
+require_relative 'challenge_10.rb'
+
 # Differences from the original solution:
 # - Using 'role=admin' as admin tuple instead of 'admin=true'
 

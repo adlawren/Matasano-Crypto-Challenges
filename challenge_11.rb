@@ -1,5 +1,9 @@
 require 'securerandom'
 
+require_relative 'challenge_7.rb'
+require_relative 'challenge_8.rb'
+require_relative 'challenge_10.rb'
+
 text = Array.new(64, 0).pack('C*')
 
 def rand_encrypt(text)

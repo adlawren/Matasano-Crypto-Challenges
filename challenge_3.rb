@@ -1,5 +1,8 @@
 require 'pry-byebug'
 
+require_relative 'challenge_1.rb'
+require_relative 'challenge_2.rb'
+
 def english_monogram_frequency_score(s)
   monogram_frequencies = {
     a: 0.08167,

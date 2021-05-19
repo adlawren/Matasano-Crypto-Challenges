@@ -1,4 +1,5 @@
 require 'pry-byebug'
+require 'securerandom'
 
 def modexp(base:, exp:, mod:)
   # Source: https://en.wikipedia.org/wiki/Modular_exponentiation#Pseudocode

@@ -1,5 +1,7 @@
 require 'openssl'
 
+require_relative 'challenge_1.rb'
+
 class CryptECB
   def initialize(key: SecureRandom.random_bytes(16))
     @key = key

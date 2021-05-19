@@ -1,4 +1,8 @@
+require 'openssl'
 require 'pry-byebug'
+require 'securerandom'
+
+require_relative 'challenge_1.rb'
 
 class MD4
   # Source: https://datatracker.ietf.org/doc/html/rfc1186#section-3

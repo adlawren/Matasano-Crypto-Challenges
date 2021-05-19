@@ -1,4 +1,6 @@
+require 'openssl'
 require 'pry-byebug'
+require 'securerandom'
 
 class SHA1
   # Source: https://en.wikipedia.org/wiki/SHA-1#SHA-1_pseudocode

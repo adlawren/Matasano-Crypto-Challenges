@@ -1,4 +1,7 @@
 require 'pry-byebug'
+require 'securerandom'
+
+require_relative 'challenge_28.rb'
 
 key = SecureRandom.alphanumeric(128)
 text = SignedMessage.new("comment1=cooking%20MCs;userdata=foo;comment2=%20like%20a%20pound%20of%20bacon", key).to_s

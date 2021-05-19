@@ -1,5 +1,10 @@
 require 'pry-byebug'
 
+require_relative 'challenge_1.rb'
+require_relative 'challenge_2.rb'
+require_relative 'challenge_3.rb'
+require_relative 'challenge_5.rb'
+
 def hamming_dist(s1, s2)
   xor(s1, s2).each_byte.map do |b|
     8.times.map { |idx| b >> idx & 1 }

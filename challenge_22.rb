@@ -1,5 +1,7 @@
 require 'pry-byebug'
 
+require_relative 'challenge_21.rb'
+
 seconds = Random.new(Time.now.to_i).rand(15)
 
 mt = MT19937.new(seed: Time.now.to_i + seconds)

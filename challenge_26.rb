@@ -1,4 +1,8 @@
 require 'pry-byebug'
+require 'securerandom'
+
+require_relative 'challenge_16.rb'
+require_relative 'challenge_18.rb'
 
 # There's a couple of approaches that would potentially work here:
 # - Crack the keystream in the appropriate section of the ciphertext, in the positions where you want to flip the bits, XOR the keystream bytes w/ the target bytes and set the ciphertext bytes to the resulting bytes

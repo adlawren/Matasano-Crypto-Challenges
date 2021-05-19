@@ -1,5 +1,7 @@
 require 'pry-byebug'
 
+require_relative 'challenge_21.rb'
+
 mt = MT19937.new(seed: Random.new(Time.now.to_i).rand(2**32 - 1))
 
 rands = []

@@ -1,4 +1,8 @@
 require 'pry-byebug'
+require 'securerandom'
+
+require_relative 'challenge_3.rb'
+require_relative 'challenge_18.rb'
 
 crypt = CryptCTR.new(nonce: Array.new(8, 0).pack('C*'))
 

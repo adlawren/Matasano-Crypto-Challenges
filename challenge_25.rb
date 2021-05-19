@@ -1,4 +1,8 @@
 require 'pry-byebug'
+require 'securerandom'
+
+require_relative 'challenge_7.rb'
+require_relative 'challenge_18.rb'
 
 plaintext = File.readlines('25.txt').join('')
 unknown = CryptECB.new(key: 'YELLOW SUBMARINE').decrypt(decode_base64(File.readlines('25.txt').map(&:strip).join('')))

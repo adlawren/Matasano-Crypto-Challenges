@@ -1,4 +1,8 @@
 require 'pry-byebug'
+require 'securerandom'
+
+require_relative 'challenge_7.rb'
+require_relative 'challenge_12.rb'
 
 class Profile
   def initialize(**args)

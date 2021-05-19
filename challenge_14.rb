@@ -1,6 +1,11 @@
 require 'securerandom'
 require 'pry-byebug'
 
+require_relative 'challenge_1.rb'
+require_relative 'challenge_7.rb'
+require_relative 'challenge_12.rb'
+require_relative 'challenge_13.rb'
+
 unknown = decode_base64("Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkgaGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBqdXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUgYnkK")
 
 r = Random.new

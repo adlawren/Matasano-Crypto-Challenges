@@ -1,5 +1,8 @@
 require 'pry-byebug'
 
+require_relative 'challenge_2.rb'
+require_relative 'challenge_21.rb'
+
 class CryptMT19937
   def initialize(seed = Time.now.to_i)
     @seed = seed

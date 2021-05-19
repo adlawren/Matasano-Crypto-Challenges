@@ -1,5 +1,7 @@
 require 'pry-byebug'
 
+require_relative 'challenge_1.rb'
+
 def count_duplicate_blocks(ciphertext)
   block_counts = Hash.new(0)
   ciphertext.bytes.each_slice(16).each do |block|

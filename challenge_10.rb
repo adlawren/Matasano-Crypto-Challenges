@@ -1,5 +1,10 @@
-require 'securerandom'
+require 'openssl'
 require 'pry-byebug'
+require 'securerandom'
+
+require_relative 'challenge_1.rb'
+require_relative 'challenge_2.rb'
+require_relative 'challenge_9.rb'
 
 class CryptCBC
   def initialize(key: SecureRandom.random_bytes(16), iv: SecureRandom.random_bytes(16))
