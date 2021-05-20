@@ -7,6 +7,8 @@ require_relative 'challenge_2.rb'
 require_relative 'challenge_9.rb'
 
 class CryptCBC
+  attr_reader :key, :iv
+
   def initialize(key: SecureRandom.random_bytes(16), iv: SecureRandom.random_bytes(16))
     @key = key
     @iv = iv
