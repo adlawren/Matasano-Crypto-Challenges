@@ -1,0 +1,15 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    enumerable-statistics (2.0.3)
+    unicode_plot (0.0.5)
+      enumerable-statistics (>= 2.0.1)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  unicode_plot
+
+BUNDLED WITH
+   1.17.2
