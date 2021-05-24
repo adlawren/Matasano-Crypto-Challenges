@@ -46,7 +46,7 @@ b_crypt = CryptDH.new(secret: b_secret)
 b_ciphertext = b_crypt.encrypt(test_message)
 
 # B/c the 'public keys' used by both parties are multiples of p, their secrets will be 0
-mitm_crypt = CryptDH.new(secret: [0].pack('C'))
+mitm_crypt = CryptDH.new(secret: encode_big_endian_int(0))
 
 raise 'MITM didn\'t crack secrets' unless mitm_crypt.decrypt(a_ciphertext) == test_message
 raise 'MITM didn\'t crack secrets' unless mitm_crypt.decrypt(b_ciphertext) == test_message

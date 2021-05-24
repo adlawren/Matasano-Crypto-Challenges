@@ -4,6 +4,22 @@ require 'securerandom'
 
 require_relative 'challenge_1.rb'
 
+def encode_big_endian_int(int)
+  int_hex = int.to_s(16)
+  if int_hex.size % 2 != 0
+    int_hex = "0#{int_hex}"
+  end
+  int_hex.chars.each_slice(2).map do |chars|
+    decode_hex(chars.join(''))
+  end.join('')
+end
+
+def decode_big_endian_int(str)
+  str.bytes.map do |byte|
+    byte.to_s(16).rjust(2, '0')
+  end.join('').to_i(16)
+end
+
 def modexp(base:, exp:, mod:)
   # Source: https://en.wikipedia.org/wiki/Modular_exponentiation#Pseudocode
   res = 1
@@ -59,14 +75,7 @@ class DH
       raise ArgumentError.new('Unsupported class for public key')
     end
 
-    modexp = modexp(base: pub_key, exp: @priv_key, mod: @p)
-    modexp_hex = modexp.to_s(16)
-    if modexp_hex.size % 2 != 0
-      modexp_hex = "0#{modexp_hex}"
-    end
-    modexp_hex.chars.each_slice(2).map do |chars|
-      decode_hex(chars.join(''))
-    end.join('')
+    encode_big_endian_int(modexp(base: pub_key, exp: @priv_key, mod: @p))
   end
 end
 

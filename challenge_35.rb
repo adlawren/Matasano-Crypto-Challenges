@@ -5,17 +5,17 @@ require_relative 'challenge_34.rb'
 [
   {
     mitm_g: 1,
-    expected_secret: [1].pack('C'),
+    expected_secret: encode_big_endian_int(1),
   },
   {
     mitm_g: DH::P,
-    expected_secret: [0].pack('C'),
+    expected_secret: encode_big_endian_int(0),
   },
   {
     mitm_g: DH::P - 1,
     expected_secret: [
-      [1].pack('C'),
-      (DH::P - 1).to_s(16).chars.each_slice(2).map { |chars| decode_hex(chars.join('')) }.join(''),
+      encode_big_endian_int(1),
+      encode_big_endian_int(DH::P - 1),
     ], # Could be one or the other, see 35/plot.rb for details
   },
 ].each do |test_case|
