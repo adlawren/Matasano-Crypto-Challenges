@@ -23,6 +23,8 @@ int main(int argc, char **argv) {
   }
 
   std::mt19937 generator(seed);
+  // For MT19937-64: https://cplusplus.com/reference/random/mt19937_64/
+  // std::mt19937_64 generator(seed);
   std::ofstream file;
   file.open(file_path);
   for (size_t i = 0; i < count; ++i) {
