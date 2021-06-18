@@ -1,6 +1,8 @@
 require 'openssl'
 require 'pry-byebug'
 
+require_relative 'challenge_33.rb'
+
 class RSA
   attr_reader :p, :q, :n, :e, :d
 
@@ -19,10 +21,18 @@ class RSA
     end
   end
 
+  def encrypt(p)
+    modexp(base: p, exp: @e, mod: @n)
+  end
+
+  def decrypt(c)
+    modexp(base: c, exp: @d, mod: @n)
+  end
+
   private
 
   def random_prime
-    OpenSSL::BN.random_prime(1024).to_i
+    OpenSSL::BN.generate_prime(1024).to_i
   end
 
   def totient(p, q)
@@ -87,3 +97,7 @@ end
     raise 'RSA didn\'t compute correct private key'
   end
 end
+
+rsa = RSA.new
+
+raise 'RSA failed to encrypt/decrypt correctly' unless rsa.decrypt(rsa.encrypt(42))
