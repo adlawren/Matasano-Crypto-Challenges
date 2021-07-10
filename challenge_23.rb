@@ -2,12 +2,9 @@ require 'pry-byebug'
 
 require_relative 'challenge_21.rb'
 
-mt = MT19937.new(seed: Random.new(Time.now.to_i).rand(2**32 - 1))
+mt = MT19937.new(seed: Time.now.to_i)
 
-rands = []
-624.times do
-  rands.push(mt.rand)
-end
+rands = 624.times.map { mt.rand }
 
 def untemper_right_shift(y, shift_length, mask)
   w = 32
@@ -59,5 +56,28 @@ cloned_mt = MT19937.new(x: x)
 10000.times do |iteration|
   rand = mt.rand
   cloned_rand = cloned_mt.rand
+  raise "RNG returned unexpected value: #{cloned_rand} vs #{rand} (expected). Iteration: #{iteration}" unless rand == cloned_rand
+end
+
+# The following performs the attack against Ruby's stdlib while it's generating 512-bit numbers
+r = Random.new(Time.now.to_i)
+
+rands2 = []
+39.times do
+  rand = r.rand(2**512)
+  rand.to_s(2).rjust(512, '0').chars.each_slice(32).map do |chars|
+    rands2.push(chars.join('').rjust(32, '0').to_i(2))
+  end
+end
+
+x2 = rands2.map do |rand|
+  untemper(rand)
+end
+
+cloned_mt2 = MT19937.new(x: x2)
+
+10000.times do |iteration|
+  rand = r.rand(2**512)
+  cloned_rand = 16.times.map { cloned_mt2.rand.to_s(2).rjust(32, '0') }.join('').to_i(2)
   raise "RNG returned unexpected value: #{cloned_rand} vs #{rand} (expected). Iteration: #{iteration}" unless rand == cloned_rand
 end
